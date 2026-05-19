@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPO — Proximal Policy Optimization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;1,300&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c8;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --code-bg: #0d0d1a;
+    --danger: #f76a6a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    height: 56px;
+  }
+  .nav-brand {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem; color: var(--accent); letter-spacing: .1em;
+    white-space: nowrap;
+  }
+  .nav-links {
+    display: flex; gap: 0; overflow-x: auto; flex: 1;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    padding: 0 1rem;
+    font-size: 0.78rem; font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted); text-decoration: none;
+    white-space: nowrap; line-height: 56px;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--text); border-bottom-color: var(--accent);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    padding: 7rem 4rem 4rem;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 40%, rgba(124,106,247,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(106,247,200,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem; color: var(--accent3); letter-spacing: .15em;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp .6s .1s ease forwards;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 1.05;
+    max-width: 18ch;
+    opacity: 0; animation: fadeUp .7s .2s ease forwards;
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 1.1rem; color: var(--muted); max-width: 55ch;
+    opacity: 0; animation: fadeUp .7s .35s ease forwards;
+  }
+  .hero-cta {
+    margin-top: 2.5rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp .7s .45s ease forwards;
+  }
+  .btn {
+    padding: .7rem 1.6rem;
+    border-radius: 4px; font-size: .9rem;
+    cursor: pointer; text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace; font-size: .8rem;
+    transition: all .2s;
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none;
+  }
+  .btn-primary:hover { background: #9b8cf9; }
+  .btn-outline {
+    background: transparent; color: var(--accent2);
+    border: 1px solid var(--accent2);
+  }
+  .btn-outline:hover { background: rgba(247,162,106,0.1); }
+
+  .hero-grid {
+    position: absolute; right: 4rem; top: 50%; transform: translateY(-50%);
+    opacity: 0; animation: fadeIn 1.2s .6s ease forwards;
+    display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem;
+    pointer-events: none;
+  }
+  .hero-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: .8rem 1rem;
+    width: 140px;
+  }
+  .hero-card .label { font-size: .65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+  .hero-card .val { font-size: 1.3rem; font-weight: 500; margin-top: .2rem; }
+
+  /* ── SECTIONS ── */
+  section {
+    max-width: 900px; margin: 0 auto;
+    padding: 5rem 2rem;
+  }
+  .section-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .72rem; color: var(--accent); letter-spacing: .15em;
+    margin-bottom: .8rem;
+  }
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem); line-height: 1.15;
+    margin-bottom: 1.5rem;
+  }
+  h3 {
+    font-family: 'DM Serif Display', serif; font-size: 1.5rem;
+    margin: 2.5rem 0 .8rem; color: var(--accent2);
+  }
+  h4 {
+    font-family: 'IBM Plex Mono', monospace; font-size: .9rem;
+    color: var(--accent3); margin: 1.8rem 0 .6rem; letter-spacing: .05em;
+  }
+  p { margin-bottom: 1rem; color: #c0c0d8; }
+  strong { color: var(--text); font-weight: 500; }
+
+  /* divider */
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    max-width: 900px; margin: 0 auto;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .card-accent { border-left: 3px solid var(--accent); }
+  .card-accent2 { border-left: 3px solid var(--accent2); }
+  .card-accent3 { border-left: 3px solid var(--accent3); }
+  .card-danger { border-left: 3px solid var(--danger); }
+
+  /* ── CODE ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.2rem 1.5rem;
+    overflow-x: auto;
+    margin: 1.2rem 0;
+    position: relative;
+  }
+  .code-block pre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .82rem; line-height: 1.65;
+    color: #c9d1d9;
+  }
+  .code-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem; color: var(--muted);
+    position: absolute; top: .7rem; right: 1rem;
+    letter-spacing: .1em;
+  }
+  /* syntax highlight tokens */
+  .k { color: #c792ea; }  /* keyword */
+  .f { color: #82aaff; }  /* function */
+  .s { color: #c3e88d; }  /* string */
+  .n { color: #f78c6c; }  /* number */
+  .c { color: #546e7a; font-style: italic; }  /* comment */
+  .v { color: var(--accent3); }  /* variable/type */
+  .m { color: var(--accent2); }  /* method */
+
+  /* ── MATH ── */
+  .math {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .92rem; color: var(--accent3);
+    text-align: center; overflow-x: auto;
+    line-height: 2.2;
+  }
+  .math sub, .math sup {
+    font-size: .65em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .math .eq-label {
+    font-size: .7rem; color: var(--muted);
+    display: block; margin-top: .4rem;
+    line-height: 1.5;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── STEPS ── */
+  .steps { counter-reset: step; margin: 1.5rem 0; }
+  .step {
+    counter-increment: step;
+    display: grid; grid-template-columns: 48px 1fr;
+    gap: 1rem; margin-bottom: 1.5rem; align-items: start;
+  }
+  .step-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: .8rem; color: var(--accent);
+    flex-shrink: 0;
+  }
+  .step-num::before { content: counter(step,decimal-leading-zero); }
+  .step-body h4 { margin-top: 0; }
+
+  /* ── COMPARISON TABLE ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 1.5rem 0; font-size: .88rem;
+  }
+  th {
+    font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
+    letter-spacing: .1em; color: var(--muted);
+    text-align: left; padding: .7rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: .7rem 1rem;
+    border-bottom: 1px solid rgba(42,42,58,.5);
+    color: #c0c0d8;
+  }
+  tr:hover td { background: var(--surface2); }
+  .yes { color: var(--accent3); }
+  .no { color: var(--danger); }
+  .mid { color: var(--accent2); }
+
+  /* ── INTERACTIVE DEMO ── */
+  .demo-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden;
+    margin: 2rem 0;
+  }
+  .demo-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: .8rem 1.2rem;
+    display: flex; align-items: center; gap: .8rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: .78rem; color: var(--muted);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #f76a6a; }
+  .dot-y { background: var(--accent2); }
+  .dot-g { background: var(--accent3); }
+  .demo-body { padding: 1.5rem; }
+
+  /* Clip ratio visualizer */
+  #clip-canvas { width: 100%; height: 260px; cursor: crosshair; }
+  .slider-row {
+    display: flex; align-items: center; gap: 1rem;
+    margin-top: 1rem; flex-wrap: wrap;
+  }
+  .slider-row label {
+    font-family: 'IBM Plex Mono', monospace; font-size: .78rem;
+    color: var(--muted); min-width: 100px;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    height: 4px; border-radius: 2px;
+    background: var(--border); flex: 1; max-width: 240px;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+  }
+  .val-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .8rem; color: var(--accent);
+    background: var(--code-bg); padding: .2rem .6rem;
+    border-radius: 4px; border: 1px solid var(--border); min-width: 54px;
+    text-align: center;
+  }
+
+  /* Training vis */
+  #train-canvas { width: 100%; height: 200px; }
+  .train-controls { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: .8rem; }
+  .ctrl-btn {
+    font-family: 'IBM Plex Mono', monospace; font-size: .75rem;
+    padding: .45rem .9rem; border-radius: 4px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+    transition: all .15s;
+  }
+  .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ctrl-btn.run { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  /* GAE timeline */
+  .timeline {
+    display: flex; gap: .4rem; align-items: stretch;
+    overflow-x: auto; padding: .5rem 0; margin: 1rem 0;
+    scrollbar-width: thin;
+  }
+  .timeline-step {
+    min-width: 80px; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: .6rem .7rem;
+    font-size: .7rem; font-family: 'IBM Plex Mono', monospace;
+    text-align: center; position: relative;
+  }
+  .timeline-step .t-label { color: var(--muted); font-size: .6rem; }
+  .timeline-step .t-val { color: var(--accent3); font-size: .95rem; font-weight: 600; margin: .2rem 0; }
+  .timeline-step .t-adv { color: var(--accent2); font-size: .7rem; }
+  .arrow { display: flex; align-items: center; color: var(--muted); font-size: 1rem; }
+
+  /* ── DERIVATION CHAIN ── */
+  .deriv-chain { margin: 1.8rem 0; }
+  .deriv-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1rem 1.4rem;
+    margin: .5rem 0;
+  }
+  .deriv-box.blue  { border-left-color: var(--accent2); }
+  .deriv-box.green { border-left-color: var(--accent3); }
+  .deriv-box.key {
+    border: 2px solid var(--accent);
+    background: rgba(124,106,247,0.07);
+    box-shadow: 0 0 24px rgba(124,106,247,0.1);
+  }
+  .deriv-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .62rem; letter-spacing: .14em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+  .deriv-label.red   { color: var(--accent); }
+  .deriv-label.blue  { color: var(--accent2); }
+  .deriv-label.green { color: var(--accent3); }
+  .deriv-body {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .88rem; line-height: 2;
+    color: var(--accent3);
+    white-space: pre-wrap; overflow-x: auto;
+  }
+  .deriv-body sub, .deriv-body sup {
+    font-size: .65em; font-family: 'IBM Plex Mono', monospace;
+  }
+  .deriv-body .hi  { color: var(--text); background: rgba(124,106,247,0.18); padding: 0 3px; border-radius: 2px; }
+  .deriv-body .r   { color: var(--accent); }
+  .deriv-body .b   { color: var(--accent2); }
+  .deriv-body .g   { color: var(--accent3); }
+  .deriv-body .mut { color: var(--muted); }
+  .deriv-note {
+    margin-top: .7rem; font-size: .84rem; color: var(--muted);
+    border-top: 1px solid var(--border); padding-top: .5rem;
+    font-style: italic;
+  }
+  .deriv-arrow {
+    text-align: center; padding: .4rem 0; position: relative;
+  }
+  .deriv-arrow::before {
+    content: '';
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 1px; background: var(--border); transform: translateX(-50%);
+    z-index: 0;
+  }
+  .deriv-arrow span {
+    position: relative; z-index: 1;
+    background: var(--bg);
+    padding: .2rem .9rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem; letter-spacing: .12em;
+    color: var(--muted); text-transform: uppercase;
+    border: 1px solid var(--border); border-radius: 20px;
+  }
+
+  /* ── WEIGHT UPDATE DIAGRAM ── */
+  .update-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .ud-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem;
+  }
+  .ud-box {
+    border-radius: 6px; padding: .7rem 1rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: .78rem;
+    text-align: center; min-width: 100px;
+    border: 1px solid var(--border);
+  }
+  .ud-box sub, .ud-box sup { font-size: .65em; }
+  .ud-box.input  { background: rgba(124,106,247,0.1); border-color: var(--accent); color: var(--accent); }
+  .ud-box.backbone { background: rgba(124,106,247,0.15); border-color: var(--accent); color: var(--text); font-size: .82rem; padding: 1rem 1.4rem; }
+  .ud-box.actor  { background: rgba(247,162,106,0.1); border-color: var(--accent2); color: var(--accent2); }
+  .ud-box.critic { background: rgba(106,247,200,0.1); border-color: var(--accent3); color: var(--accent3); }
+  .ud-box.loss   { background: var(--surface2); border-color: var(--border); color: var(--muted); font-size: .72rem; }
+  .ud-box.total  { background: rgba(124,106,247,0.2); border-color: var(--accent); color: var(--text); border-width: 2px; }
+  .ud-arrow { color: var(--muted); font-size: 1rem; flex-shrink: 0; }
+  .ud-arrow.down { transform: rotate(90deg); }
+  .ud-section-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: .65rem;
+    letter-spacing: .15em; color: var(--muted); text-transform: uppercase;
+    text-align: center; margin: .5rem 0 .3rem;
+  }
+  .ud-split {
+    display: flex; gap: 1.5rem; justify-content: center;
+    align-items: flex-start; flex-wrap: wrap;
+  }
+  .ud-branch {
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  }
+  .ud-connector {
+    width: 1px; height: 1.5rem; background: var(--border); margin: 0 auto;
+  }
+  .ud-hline {
+    border-top: 1px solid var(--border); width: 100%; margin: .5rem 0;
+  }
+  .grad-tag {
+    font-size: .68rem; color: var(--muted); font-family: 'IBM Plex Mono', monospace;
+    font-style: italic;
+  }
+  .callout {
+    border: 1px solid var(--accent);
+    border-radius: 6px; padding: 1rem 1.2rem;
+    margin: 1.2rem 0; background: rgba(124,106,247,.07);
+    font-size: .92rem;
+  }
+  .callout.warn {
+    border-color: var(--accent2); background: rgba(247,162,106,.07);
+  }
+  .callout.tip {
+    border-color: var(--accent3); background: rgba(106,247,200,.07);
+  }
+  .callout-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: .72rem;
+    color: var(--accent); letter-spacing: .1em; margin-bottom: .5rem;
+  }
+  .callout.warn .callout-title { color: var(--accent2); }
+  .callout.tip .callout-title { color: var(--accent3); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity:0; } to { opacity:1; }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(16px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace; font-size: .72rem; color: var(--muted);
+  }
+
+  @media (max-width: 768px) {
+    .hero { padding: 6rem 1.5rem 3rem; }
+    .hero-grid { display: none; }
+    section { padding: 3.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">PPO // GUIDE</div>
+  <div class="nav-links">
+    <a href="#foundations">Foundations</a>
+    <a href="#policy-gradient">Policy Gradient</a>
+    <a href="#derivation">Derivation</a>
+    <a href="#clip">PPO-Clip</a>
+    <a href="#gae">GAE</a>
+    <a href="#full-algo">Algorithm</a>
+    <a href="#implementation">Code</a>
+    <a href="#tips">Tips</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">// PROXIMAL POLICY OPTIMIZATION</div>
+  <h1>Master <em>PPO</em> from First Principles</h1>
+  <p class="hero-sub">A complete, rigorous guide to the most widely-used deep RL algorithm — theory, math, intuition, and production-quality implementation.</p>
+  <div class="hero-cta">
+    <a href="#foundations" class="btn btn-primary">Start Learning</a>
+    <a href="#implementation" class="btn btn-outline">Jump to Code</a>
+  </div>
+
+  <div class="hero-grid">
+    <div class="hero-card"><div class="label">ALGORITHM</div><div class="val" style="color:var(--accent)">PPO</div></div>
+    <div class="hero-card"><div class="label">TYPE</div><div class="val" style="font-size:.95rem">On-Policy</div></div>
+    <div class="hero-card"><div class="label">YEAR</div><div class="val">2017</div></div>
+    <div class="hero-card"><div class="label">CLIP ε</div><div class="val" style="color:var(--accent2)">0.2</div></div>
+    <div class="hero-card"><div class="label">PAPER</div><div class="val" style="font-size:.7rem;line-height:1.3;padding-top:.3rem">Schulman<br>et al.</div></div>
+    <div class="hero-card"><div class="label">USED IN</div><div class="val" style="font-size:.7rem;line-height:1.3;padding-top:.3rem">ChatGPT<br>OpenAI 5</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SECTION 1: FOUNDATIONS ═══════════════════ -->
+<hr class="divider">
+<section id="foundations">
+  <div class="section-tag">01 // FOUNDATIONS</div>
+  <h2>What is Reinforcement Learning?</h2>
+
+  <p>Before diving into PPO, we need a firm grasp of the RL framework. An <strong>agent</strong> interacts with an <strong>environment</strong> through a loop:</p>
+
+  <div class="card card-accent reveal">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;text-align:center;">
+      <div>
+        <div style="font-size:2rem;margin-bottom:.3rem">🤖</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent)">AGENT</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:.4rem">Selects actions using its policy π(a|s)</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem">
+        <div style="color:var(--accent3);font-size:.8rem;font-family:'IBM Plex Mono',monospace">── action a<sub>t</sub> ──▶</div>
+        <div style="color:var(--accent2);font-size:.8rem;font-family:'IBM Plex Mono',monospace">◀── state s<sub>t+1</sub>, r<sub>t</sub> ──</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;margin-bottom:.3rem">🌍</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent3)">ENVIRONMENT</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:.4rem">Returns next state and reward signal</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Core Definitions</h3>
+
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>State s<sub>t</sub></h4>
+      <p>The full description of the environment at time t. Could be pixels, sensor readings, game board, etc.</p>
+    </div>
+    <div class="card card-accent2">
+      <h4>Action a<sub>t</sub></h4>
+      <p>What the agent does at time t. Can be discrete (left/right/jump) or continuous (torque, steering angle).</p>
+    </div>
+    <div class="card card-accent3">
+      <h4>Reward r<sub>t</sub></h4>
+      <p>A scalar signal from the environment. The agent's only feedback signal — it must learn entirely from this.</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--muted)">
+      <h4>Policy π(a|s)</h4>
+      <p>A probability distribution over actions given state s. This is what we're optimizing.</p>
+    </div>
+  </div>
+
+  <h3>The Goal: Maximize Return</h3>
+  <p>We want to find a policy π that maximizes the <strong>expected return</strong> — the discounted sum of future rewards:</p>
+
+  <div class="math reveal">
+    G<sub>t</sub> = r<sub>t</sub> + γ·r<sub>t+1</sub> + γ²·r<sub>t+2</sub> + ... = Σ<sub>k=0</sub><sup>∞</sup> γ<sup>k</sup> · r<sub>t+k</sub>
+    <span class="eq-label">Discounted Return (γ ∈ [0,1) is the discount factor)</span>
+  </div>
+
+  <div class="math reveal">
+    J(θ) = 𝔼<sub>τ~π<sub>θ</sub></sub> [ Σ<sub>t</sub> γ<sup>t</sup> r<sub>t</sub> ]
+    <span class="eq-label">Objective: Expected return under policy π<sub>θ</sub> over trajectories τ</span>
+  </div>
+
+  <h3>Value Functions</h3>
+  <p>Two crucial quantities that estimate "how good" a state or state-action pair is:</p>
+
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>State Value V(s)</h4>
+      <div class="math" style="margin:.5rem 0;font-size:.78rem;text-align:left">V<sup>π</sup>(s) = 𝔼<sub>π</sub>[G<sub>t</sub> | s<sub>t</sub>=s]</div>
+      <p style="font-size:.88rem">Expected return from state s, following policy π. Answers: "How good is it to be in state s?"</p>
+    </div>
+    <div class="card card-accent2">
+      <h4>Action Value Q(s,a)</h4>
+      <div class="math" style="margin:.5rem 0;font-size:.78rem;text-align:left">Q<sup>π</sup>(s,a) = 𝔼<sub>π</sub>[G<sub>t</sub> | s<sub>t</sub>=s, a<sub>t</sub>=a]</div>
+      <p style="font-size:.88rem">Expected return from s, taking action a first, then following π. Answers: "How good is action a in state s?"</p>
+    </div>
+  </div>
+
+  <h3>Advantage Function A(s,a)</h3>
+  <p>The <strong>advantage</strong> is the key quantity in PPO. It answers: "How much <em>better</em> is action a compared to the average action in state s?"</p>
+
+  <div class="math reveal">
+    A<sup>π</sup>(s, a) = Q<sup>π</sup>(s, a) − V<sup>π</sup>(s)
+    <span class="eq-label">Positive advantage → action is better than average. Negative → worse than average.</span>
+  </div>
+
+  <div class="callout tip reveal">
+    <div class="callout-title">// INTUITION</div>
+    If A(s,a) = +2.5, it means: taking action a in state s gives 2.5 more expected return than the average action would. PPO will <em>increase</em> the probability of this action. If A(s,a) = -1.0, PPO will <em>decrease</em> it.
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 2: POLICY GRADIENT ═══════════════════ -->
+<hr class="divider">
+<section id="policy-gradient">
+  <div class="section-tag">02 // POLICY GRADIENT THEOREM</div>
+  <h2>From Calculus to Policy Gradient</h2>
+
+  <p>We want to maximize J(θ). The natural approach: gradient ascent. We need ∇_θ J(θ). But J involves an expectation over trajectories that <em>depend</em> on θ — we can't differentiate through the environment.</p>
+
+  <h3>The Log-Derivative Trick</h3>
+  <p>The <strong>Policy Gradient Theorem</strong> gives us a computable gradient using the "log-derivative trick":</p>
+
+  <div class="math reveal">
+    ∇<sub>θ</sub> J(θ) = 𝔼<sub>τ~π<sub>θ</sub></sub> [ Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · G<sub>t</sub> ]
+    <span class="eq-label">REINFORCE / Policy Gradient Theorem</span>
+  </div>
+
+  <div class="card card-accent reveal">
+    <h4>Why does this work?</h4>
+    <p style="font-size:.9rem">The key identity: ∇log f(x) = ∇f(x)/f(x), so ∇f(x) = f(x)·∇log f(x). This lets us express the gradient of an expectation as an expectation of a gradient — something we can estimate with samples from the environment.</p>
+  </div>
+
+  <h3>REINFORCE Algorithm (Vanilla Policy Gradient)</h3>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Collect a trajectory</h4>
+        <p>Run policy π_θ in the environment for one full episode: τ = (s₀,a₀,r₀, s₁,a₁,r₁, ...)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Compute returns G<sub>t</sub></h4>
+        <p>For each timestep t, compute the discounted return: G<sub>t</sub> = Σ<sub>k≥0</sub> γ<sup>k</sup> r<sub>t+k</sub></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Compute gradient</h4>
+        <p>g = (1/T) Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · G<sub>t</sub></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Update parameters</h4>
+        <p>θ ← θ + α · g (gradient <em>ascent</em> since we're maximizing)</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Problems with Vanilla Policy Gradient</h3>
+
+  <div class="card-grid reveal">
+    <div class="card card-danger">
+      <h4>🔴 High Variance</h4>
+      <p>Returns G<sub>t</sub> are noisy. A single lucky trajectory could push the policy far in the wrong direction. Variance grows with episode length.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 Sample Inefficiency</h4>
+      <p>On-policy: each batch of data can only be used for a <em>single</em> gradient update, then discarded. Expensive for complex environments.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 Step Size Sensitivity</h4>
+      <p>Too large a step → policy collapses catastrophically. Too small → unbearably slow. No principled way to set learning rate.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 Non-Stationarity</h4>
+      <p>Updating the policy changes the data distribution, making old gradient estimates stale immediately.</p>
+    </div>
+  </div>
+
+  <div class="callout warn reveal">
+    <div class="callout-title">// THE CORE PROBLEM PPO SOLVES</div>
+    How do we take the <strong>largest possible improvement step</strong> on the policy, without taking such a large step that we accidentally destroy performance? This is the "trust region" problem, and it's exactly what PPO addresses.
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 3: FULL DERIVATION ═══════════════════ -->
+<hr class="divider">
+<section id="derivation">
+  <div class="section-tag">03 // COMPLETE DERIVATION — INTEGRAL TO L<sup>CLIP</sup></div>
+  <h2>From Naive Integral to PPO Objective</h2>
+  <p>Every transformation, step by step, with the algebra made explicit. This is the core intellectual content of PPO.</p>
+
+  <!-- ── STEP 1 ── -->
+  <h3>Step 1 — The Naive Objective</h3>
+  <p>We want parameters θ that maximise expected total reward. A <strong>trajectory</strong> τ = (s<sub>0</sub>,a<sub>0</sub>,r<sub>0</sub>, s<sub>1</sub>,a<sub>1</sub>,r<sub>1</sub>, …) is scored by its total discounted return R(τ) = Σ<sub>t</sub> γ<sup>t</sup>r<sub>t</sub>. The objective is an integral over all possible trajectories:</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box key">
+      <div class="deriv-label red">Objective — Naive Form</div>
+      <div class="deriv-body">J(θ)  =  <span class="r">𝔼</span><sub>τ~π<sub>θ</sub></sub> [ R(τ) ]
+      =  <span class="r">∫</span> <span class="b">p<sub>θ</sub>(τ)</span> · <span class="g">R(τ)</span>  <span class="r">dτ</span></div>
+      <div class="deriv-note">Integral over every possible trajectory, weighted by how likely π<sub>θ</sub> is to produce it, scored by its total return. <strong>Infeasible</strong> — infinite trajectory space.</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2 ── -->
+  <h3>Step 2 — Monte Carlo: Integral → Sample Average</h3>
+  <p>An integral weighted by a probability is just an expectation. Any expectation can be estimated by sampling — this is <strong>Monte Carlo estimation</strong>:</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box blue">
+      <div class="deriv-label blue">General Monte Carlo Identity</div>
+      <div class="deriv-body">𝔼<sub>x~p</sub>[f(x)]  =  ∫ p(x)·f(x) dx  ≈  <span class="hi">(1/N) Σ<sub>i</sub> f(x<sub>i</sub>)</span>,  x<sub>i</sub> ~ p</div>
+    </div>
+    <div class="deriv-arrow"><span>Apply to J(θ)</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">Objective — Sampled Form</div>
+      <div class="deriv-body">J(θ)  ≈  <span class="hi">(1/N) Σ<sub>i</sub> R(τ<sub>i</sub>)</span>,  τ<sub>i</sub> ~ π<sub>θ</sub></div>
+      <div class="deriv-note">Run the policy N times, average their returns. The ∫dτ becomes (1/N)Σ.</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3 ── -->
+  <h3>Step 3 — Policy Gradient: The Log-Derivative Trick</h3>
+  <p>To optimise J(θ) by gradient ascent we need ∇<sub>θ</sub>J(θ). The expectation is over a distribution p<sub>θ</sub>(τ) that <em>depends on θ</em>, so we can't just move ∇<sub>θ</sub> inside naively.</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box">
+      <div class="deriv-label">Step 3a — Move gradient inside integral</div>
+      <div class="deriv-body">∇<sub>θ</sub>J(θ)  =  ∇<sub>θ</sub> ∫ p<sub>θ</sub>(τ)·R(τ) dτ
+           =  ∫ <span class="r">∇<sub>θ</sub> p<sub>θ</sub>(τ)</span> · R(τ) dτ</div>
+      <div class="deriv-note">R(τ) has no θ → ∇<sub>θ</sub> acts only on p<sub>θ</sub>(τ).</div>
+    </div>
+    <div class="deriv-arrow"><span>Log-Derivative Identity</span></div>
+    <div class="deriv-box blue">
+      <div class="deriv-label blue">Key Identity: ∇f = f · ∇log f</div>
+      <div class="deriv-body">∇<sub>θ</sub> p<sub>θ</sub>(τ)  =  p<sub>θ</sub>(τ) · <span class="hi">∇<sub>θ</sub> log p<sub>θ</sub>(τ)</span>
+
+<span class="mut">Proof:  ∇log f = ∇f/f  ⟹  ∇f = f·∇log f  ✓</span></div>
+    </div>
+    <div class="deriv-arrow"><span>Substitute back</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">Step 3b — Gradient as Expectation</div>
+      <div class="deriv-body">∇<sub>θ</sub>J(θ)  =  ∫ p<sub>θ</sub>(τ) · ∇<sub>θ</sub>log p<sub>θ</sub>(τ) · R(τ) dτ
+           =  <span class="hi">𝔼<sub>τ~π<sub>θ</sub></sub>[ ∇<sub>θ</sub>log p<sub>θ</sub>(τ) · R(τ) ]</span></div>
+      <div class="deriv-note">Now an expectation — we can estimate it by sampling. R(τ) is just a scalar weight. The environment needs no gradient.</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 4 ── -->
+  <h3>Step 4 — Factorisation: Environment Terms Cancel</h3>
+  <p>The trajectory probability factorises via the chain rule. Taking the log and then ∇<sub>θ</sub>, all environment terms vanish:</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box blue">
+      <div class="deriv-label blue">Trajectory Probability — Expanded</div>
+      <div class="deriv-body">p<sub>θ</sub>(τ)  =  <span class="b">p(s<sub>0</sub>)</span> · Π<sub>t</sub>[ <span class="r">π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</span> · <span class="b">p(s<sub>t+1</sub>|s<sub>t</sub>,a<sub>t</sub>)</span> ]
+<span class="mut">           ↑ environment, no θ    ↑ policy, depends on θ    ↑ environment, no θ</span></div>
+    </div>
+    <div class="deriv-arrow"><span>Take log, then ∇<sub>θ</sub> — blue (env) terms → 0</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">Only Policy Terms Survive</div>
+      <div class="deriv-body">∇<sub>θ</sub> log p<sub>θ</sub>(τ)  =  <span class="hi">Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</span>
+
+∴  ∇<sub>θ</sub>J(θ)  =  𝔼<sub>τ~π<sub>θ</sub></sub>[ <span class="hi">Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)</span> · R(τ) ]
+                ≈  (1/N) Σ<sub>i</sub> [ Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) ] · R(τ<sub>i</sub>)   ← REINFORCE</div>
+      <div class="deriv-note">The environment is completely gone. We only differentiate our own policy π<sub>θ</sub>. This is why the environment doesn't need to be differentiable.</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 5 ── -->
+  <h3>Step 5 — Reward-to-Go &amp; Advantage</h3>
+  <p>Using the full R(τ) gives credit for past rewards to future actions — causally wrong, and adds variance. Fix: weight each timestep only by its own future return, then subtract a baseline.</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box">
+      <div class="deriv-label">Problem — Full Return Ignores Causality</div>
+      <div class="deriv-body">R(τ) = <span class="r">r<sub>0</sub>+…+γ<sup>t-1</sup>r<sub>t-1</sub></span>  +  γ<sup>t</sup>r<sub>t</sub>+γ<sup>t+1</sup>r<sub>t+1</sub>+…
+       <span class="r">^^ past: aₜ did not cause these ^^</span>   ^^ future: aₜ causes these ^^</div>
+    </div>
+    <div class="deriv-arrow"><span>Replace R(τ) with reward-to-go G<sub>t</sub></span></div>
+    <div class="deriv-box green">
+      <div class="deriv-label green">Reward-to-Go</div>
+      <div class="deriv-body"><span class="g">G<sub>t</sub></span>  =  Σ<sub>k=t</sub><sup>T</sup> γ<sup>k</sup> r<sub>k</sub>   (only future rewards from t)
+
+∇<sub>θ</sub>J(θ)  =  𝔼<sub>τ~π<sub>θ</sub></sub>[ Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · <span class="hi">G<sub>t</sub></span> ]</div>
+    </div>
+    <div class="deriv-arrow"><span>Subtract baseline V<sup>π</sup>(s<sub>t</sub>) — zero mean, reduces variance</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">Advantage Function — Final Gradient</div>
+      <div class="deriv-body">∇<sub>θ</sub>J(θ)  =  𝔼<sub>τ~π<sub>θ</sub></sub>[ Σ<sub>t</sub> ∇<sub>θ</sub> log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · <span class="hi">Â<sub>t</sub></span> ]
+
+where  <span class="hi">Â<sub>t</sub>  =  G<sub>t</sub> − V<sup>π</sup>(s<sub>t</sub>)</span>
+  Â<sub>t</sub> &gt; 0  →  action better than average  →  increase its probability
+  Â<sub>t</sub> &lt; 0  →  action worse than average   →  decrease its probability</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 6 ── -->
+  <h3>Step 6 — Importance Sampling: Reusing Old Data</h3>
+  <p>Each update so far requires fresh samples from π<sub>θ</sub> — expensive. We want to collect data <em>once</em> under π<sub>θ<sub>old</sub></sub> then do <strong>multiple updates</strong> on it. Importance sampling corrects for the distribution mismatch:</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box blue">
+      <div class="deriv-label blue">Importance Sampling Identity</div>
+      <div class="deriv-body">𝔼<sub>x~p</sub>[f(x)]  =  𝔼<sub>x~q</sub>[ <span class="hi">p(x)/q(x)</span> · f(x) ]
+
+<span class="mut">Proof:  ∫ q(x)·(p(x)/q(x))·f(x) dx  =  ∫ p(x)·f(x) dx  ✓</span></div>
+    </div>
+    <div class="deriv-arrow"><span>Apply: p = π<sub>θ</sub>, q = π<sub>θ<sub>old</sub></sub></span></div>
+    <div class="deriv-box">
+      <div class="deriv-label">Gradient Rewritten Under Old Policy</div>
+      <div class="deriv-body">𝔼<sub>τ~π<sub>θ</sub></sub>[ Σ<sub>t</sub> ∇<sub>θ</sub>log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · Â<sub>t</sub> ]
+
+= 𝔼<sub>τ~<span class="b">π<sub>θ<sub>old</sub></sub></span></sub>[ <span class="hi">π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) / π<sub>θ<sub>old</sub></sub>(a<sub>t</sub>|s<sub>t</sub>)</span> · ∇<sub>θ</sub>log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) · Â<sub>t</sub> ]</div>
+      <div class="deriv-note">Now the expectation is under π<sub>θ<sub>old</sub></sub> — we can use our stored rollouts.</div>
+    </div>
+    <div class="deriv-arrow"><span>Simplify: (p/q)·∇log p = ∇(p/q)</span></div>
+    <div class="deriv-box blue">
+      <div class="deriv-label blue">The Algebraic Collapse</div>
+      <div class="deriv-body"><span class="b">π<sub>θ</sub></span>/<span class="b">π<sub>θ<sub>old</sub></sub></span>  ·  ∇<sub>θ</sub>log π<sub>θ</sub>
+= <span class="b">π<sub>θ</sub></span>/<span class="b">π<sub>θ<sub>old</sub></sub></span>  ·  ∇<sub>θ</sub>π<sub>θ</sub>/π<sub>θ</sub>         <span class="mut">(since ∇log f = ∇f/f)</span>
+= (1/<span class="b">π<sub>θ<sub>old</sub></sub></span>) · ∇<sub>θ</sub>π<sub>θ</sub>
+= ∇<sub>θ</sub>( <span class="hi">π<sub>θ</sub>/π<sub>θ<sub>old</sub></sub></span> )
+= ∇<sub>θ</sub> <span class="hi">r(θ)</span>    where r(θ) = π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) / π<sub>θ<sub>old</sub></sub>(a<sub>t</sub>|s<sub>t</sub>)</div>
+    </div>
+    <div class="deriv-arrow"><span>Pull ∇<sub>θ</sub> outside → defines surrogate objective</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">Surrogate Objective L<sup>CPI</sup></div>
+      <div class="deriv-body">∇<sub>θ</sub>J(θ)  =  ∇<sub>θ</sub>  𝔼<sub>τ~π<sub>θ<sub>old</sub></sub></sub>[ <span class="hi">r(θ) · Â<sub>t</sub></span> ]
+
+Maximise:  <span class="hi">L<sup>CPI</sup>(θ)  =  𝔼<sub>t</sub>[ r(θ) · Â<sub>t</sub> ]</span>
+where      r(θ) = π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>) / π<sub>θ<sub>old</sub></sub>(a<sub>t</sub>|s<sub>t</sub>)
+  r(θ) = 1  when θ = θ<sub>old</sub>
+  r(θ) &gt; 1  new policy more likely to take this action
+  r(θ) &lt; 1  new policy less likely</div>
+      <div class="deriv-note">Data reuse unlocked — but unconstrained L<sup>CPI</sup> lets r(θ) grow arbitrarily large, making importance weights inaccurate and destroying performance. We need to constrain how far r(θ) moves.</div>
+    </div>
+  </div>
+
+  <!-- ── STEP 7 ── -->
+  <h3>Step 7 — The PPO Clip: Constraining r(θ)</h3>
+  <p>TRPO constrains via a KL divergence penalty — correct but requires expensive second-order optimisation. PPO's insight: just <strong>clip r(θ)</strong> directly.</p>
+
+  <div class="deriv-chain reveal">
+    <div class="deriv-box">
+      <div class="deriv-label">TRPO Constraint (too expensive)</div>
+      <div class="deriv-body">maximise   𝔼<sub>t</sub>[ r(θ) · Â<sub>t</sub> ]
+subject to 𝔼<sub>t</sub>[ KL[ π<sub>θ<sub>old</sub></sub>(·|s<sub>t</sub>) ‖ π<sub>θ</sub>(·|s<sub>t</sub>) ] ] ≤ δ
+<span class="mut">Requires conjugate gradient + Hessian-vector products — O(n²) cost</span></div>
+    </div>
+    <div class="deriv-arrow"><span>PPO's simpler alternative</span></div>
+    <div class="deriv-box green">
+      <div class="deriv-label green">Clipped Ratio</div>
+      <div class="deriv-body">clip( r(θ), 1−ε, 1+ε )  =
+  1−ε    if r(θ) &lt; 1−ε    <span class="mut">← floor: prevent too much decrease</span>
+  r(θ)   if 1−ε ≤ r(θ) ≤ 1+ε  <span class="mut">← free zone: gradient flows</span>
+  1+ε    if r(θ) &gt; 1+ε    <span class="mut">← ceiling: prevent too much increase</span></div>
+    </div>
+    <div class="deriv-arrow"><span>Take min of clipped and unclipped — pessimistic lower bound</span></div>
+    <div class="deriv-box key">
+      <div class="deriv-label red">★ PPO-Clip Objective — Final Form</div>
+      <div class="deriv-body"><span class="hi">L<sup>CLIP</sup>(θ)  =  𝔼<sub>t</sub>[ min(  r(θ)·Â<sub>t</sub>,  clip(r(θ), 1−ε, 1+ε)·Â<sub>t</sub>  ) ]</span>
+
+Why min()?  It gives the <span class="hi">worst-case</span> (most conservative) estimate:
+  Â<sub>t</sub> &gt; 0, r &gt; 1+ε  →  clipped term smaller  →  min picks it  →  no gradient
+  Â<sub>t</sub> &gt; 0, r &lt; 1+ε  →  unclipped smaller   →  min picks it  →  gradient flows
+  Â<sub>t</sub> &lt; 0, r &lt; 1−ε  →  clipped term larger  →  min picks it  →  no gradient
+  Â<sub>t</sub> &lt; 0, r &gt; 1−ε  →  unclipped larger    →  min picks it  →  gradient flows</div>
+      <div class="deriv-note">ε = 0.2 is the standard value. r(θ) is computed in log-space as exp(log π<sub>θ</sub> − log π<sub>θ<sub>old</sub></sub>) for numerical stability.</div>
+    </div>
+  </div>
+
+  <div class="callout tip reveal">
+    <div class="callout-title">// DERIVATION SUMMARY</div>
+    <strong>Infeasible integral</strong> → Monte Carlo sampling → <strong>log-derivative trick</strong> → gradient as expectation → factorisation removes environment → <strong>reward-to-go</strong> fixes causality → advantage reduces variance → <strong>importance sampling</strong> enables data reuse → <strong>clip</strong> prevents trust-region violation = <strong>L<sup>CLIP</sup></strong>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 4: CLIPPING ═══════════════════ -->
+<hr class="divider">
+<section id="clip">
+  <div class="section-tag">04 // PPO-CLIP OBJECTIVE — DEEP DIVE</div>
+  <h2>The Clipping Mechanism</h2>
+
+  <p>We derived L<sup>CLIP</sup> in the previous section. Here we go deeper — intuition, interactive visualisation, and the case-by-case analysis of when clipping engages.</p>
+
+  <div class="math reveal">
+    L<sup>CLIP</sup>(θ) = 𝔼<sub>t</sub>[ min( r<sub>t</sub>(θ)·Â<sub>t</sub> , clip(r<sub>t</sub>(θ), 1−ε, 1+ε)·Â<sub>t</sub> ) ]
+    <span class="eq-label">PPO-Clip Objective — ε is typically 0.1 or 0.2</span>
+  </div>
+
+  <h3>Unpacking the Formula</h3>
+  <p>There are two terms inside the min():</p>
+
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>Term 1: r<sub>t</sub>(θ)·Â<sub>t</sub></h4>
+      <p>The unclipped surrogate objective (same as TRPO's objective). This is what we'd optimize without any constraint.</p>
+    </div>
+    <div class="card card-accent2">
+      <h4>Term 2: clip(r<sub>t</sub>(θ), 1−ε, 1+ε)·Â<sub>t</sub></h4>
+      <p>The clipped version: ratio is forced to stay within [1−ε, 1+ε]. Any change beyond this boundary is ignored.</p>
+    </div>
+  </div>
+
+  <h3>Case Analysis: When Does Clipping Matter?</h3>
+
+  <table class="reveal">
+    <thead>
+      <tr><th>Advantage Â<sub>t</sub></th><th>Ratio r(θ)</th><th>Active Term</th><th>Effect</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Positive (+)</td><td>r &lt; 1+ε</td><td class="yes">Unclipped</td><td>Gradient flows: increase action prob</td>
+      </tr>
+      <tr>
+        <td>Positive (+)</td><td>r &gt; 1+ε</td><td class="mid">Clipped</td><td>No gradient: we've increased enough</td>
+      </tr>
+      <tr>
+        <td>Negative (−)</td><td>r &gt; 1−ε</td><td class="yes">Unclipped</td><td>Gradient flows: decrease action prob</td>
+      </tr>
+      <tr>
+        <td>Negative (−)</td><td>r &lt; 1−ε</td><td class="mid">Clipped</td><td>No gradient: we've decreased enough</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout reveal">
+    <div class="callout-title">// THE GENIUS OF MIN()</div>
+    Taking the <strong>minimum</strong> of the clipped and unclipped objectives creates a <em>pessimistic lower bound</em>. We only get credit for the worse of the two estimates — this prevents the policy from being overly optimistic about changes outside the trust region.
+  </div>
+
+  <!-- INTERACTIVE CLIP DEMO -->
+  <div class="demo-container reveal">
+    <div class="demo-header">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span style="margin-left:.4rem">INTERACTIVE: PPO-Clip Objective Visualizer</span>
+    </div>
+    <div class="demo-body">
+      <canvas id="clip-canvas"></canvas>
+      <div class="slider-row">
+        <label>Advantage Â</label>
+        <input type="range" id="adv-slider" min="-3" max="3" step="0.1" value="1.5">
+        <span class="val-badge" id="adv-val">+1.5</span>
+      </div>
+      <div class="slider-row">
+        <label>Clip ε</label>
+        <input type="range" id="eps-slider" min="0.05" max="0.5" step="0.05" value="0.2">
+        <span class="val-badge" id="eps-val">0.20</span>
+      </div>
+      <div style="margin-top:.8rem;font-size:.78rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">
+        <span style="color:var(--accent)">── Clipped objective</span> &nbsp;
+        <span style="color:var(--accent2)">── Unclipped objective</span> &nbsp;
+        <span style="color:var(--accent3)">── L^CLIP (minimum)</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>PPO-KL Variant (Alternative)</h3>
+  <p>An alternative to clipping uses an adaptive KL penalty:</p>
+  <div class="math reveal">
+    L<sup>KLPEN</sup>(θ) = 𝔼<sub>t</sub>[ r<sub>t</sub>(θ)·Â<sub>t</sub> − β·KL[π<sub>θ<sub>old</sub></sub>‖π<sub>θ</sub>] ]
+    <span class="eq-label">PPO-KL: β is adapted based on measured KL (increase if KL too large, decrease if too small)</span>
+  </div>
+  <p>In practice, <strong>PPO-Clip is used more often</strong> because it's simpler, more robust, and doesn't require tuning the adaptive KL schedule.</p>
+</section>
+
+<!-- ═══════════════════ SECTION 5: GAE ═══════════════════ -->
+<hr class="divider">
+<section id="gae">
+  <div class="section-tag">05 // GENERALIZED ADVANTAGE ESTIMATION</div>
+  <h2>Computing the Advantage: GAE</h2>
+
+  <p>We need estimates of Â<sub>t</sub>. The quality of these estimates massively affects training stability. <strong>Generalized Advantage Estimation (GAE)</strong> provides a principled way to do this.</p>
+
+  <h3>The Bias-Variance Tradeoff</h3>
+
+  <div class="card-grid reveal">
+    <div class="card" style="border-left:3px solid var(--danger)">
+      <h4>1-step TD Error δ<sub>t</sub></h4>
+      <div class="math" style="font-size:.78rem;text-align:left;margin:.5rem 0">δ<sub>t</sub> = r<sub>t</sub> + γV(s<sub>t+1</sub>) − V(s<sub>t</sub>)</div>
+      <p style="font-size:.85rem"><span class="yes">Low variance</span> (single bootstrap). <span class="no">High bias</span> (depends on V accuracy).</p>
+    </div>
+    <div class="card" style="border-left:3px solid var(--accent3)">
+      <h4>Monte Carlo Return</h4>
+      <div class="math" style="font-size:.78rem;text-align:left;margin:.5rem 0">Â<sub>t</sub> = G<sub>t</sub> − V(s<sub>t</sub>)</div>
+      <p style="font-size:.85rem"><span class="yes">Zero bias</span> (actual rollout). <span class="no">High variance</span> (many random steps accumulate).</p>
+    </div>
+  </div>
+
+  <p>GAE interpolates between these two extremes using a parameter <strong>λ ∈ [0,1]</strong>:</p>
+
+  <div class="math reveal">
+    Â<sub>t</sub><sup>GAE(γ,λ)</sup> = Σ<sub>l=0</sub><sup>∞</sup> (γλ)<sup>l</sup> · δ<sub>t+l</sub>
+    <span class="eq-label">GAE: exponentially-weighted sum of TD errors. λ→0: 1-step TD. λ→1: Monte Carlo.</span>
+  </div>
+
+  <p>This has a beautiful recursive form for efficient computation:</p>
+
+  <div class="math reveal">
+    Â<sub>t</sub> = δ<sub>t</sub> + γλ · Â<sub>t+1</sub>
+    <span class="eq-label">Recursive GAE — computed backwards from the end of the trajectory</span>
+  </div>
+
+  <!-- GAE Timeline Interactive Demo -->
+  <div class="demo-container reveal">
+    <div class="demo-header">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span style="margin-left:.4rem">INTERACTIVE: GAE Computation (λ = 0.95, γ = 0.99)</span>
+    </div>
+    <div class="demo-body">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:1rem">A sample trajectory with T=6 steps. Computed backwards (←). Â<sub>t</sub> = δ<sub>t</sub> + (γλ)·Â<sub>t+1</sub></p>
+      <div class="timeline" id="gae-timeline"></div>
+      <div class="train-controls">
+        <button class="ctrl-btn" onclick="regenerateGAE()">↻ New Trajectory</button>
+      </div>
+    </div>
+  </div>
+
+  <h3>Typical Hyperparameters</h3>
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>γ = 0.99</h4>
+      <p>Discount factor. High γ considers far future. Lower γ makes the agent myopic but reduces variance.</p>
+    </div>
+    <div class="card card-accent2">
+      <h4>λ = 0.95</h4>
+      <p>GAE parameter. Close to 1 → less bias, more variance. Close to 0 → more bias, less variance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 6: FULL ALGORITHM ═══════════════════ -->
+<hr class="divider">
+<section id="full-algo">
+  <div class="section-tag">06 // FULL PPO ALGORITHM</div>
+  <h2>Putting It All Together</h2>
+
+  <h3>The Complete PPO Objective</h3>
+  <p>PPO optimizes a combined loss with three components:</p>
+
+  <div class="math reveal">
+    L<sup>PPO</sup>(θ) = 𝔼<sub>t</sub>[ L<sup>CLIP</sup>(θ) − c<sub>1</sub>·L<sup>VF</sup>(θ) + c<sub>2</sub>·S[π<sub>θ</sub>](s<sub>t</sub>) ]
+    <span class="eq-label">Full PPO objective. c<sub>1</sub> ≈ 0.5 (value coeff), c<sub>2</sub> ≈ 0.01 (entropy coeff)</span>
+  </div>
+
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>L^CLIP — Policy Loss</h4>
+      <p>The clipped surrogate objective. Maximizing this improves the policy while staying within the trust region.</p>
+    </div>
+    <div class="card card-accent2">
+      <h4>L^VF — Value Loss</h4>
+      <div class="math" style="font-size:.78rem;text-align:left;margin:.4rem 0">L<sup>VF</sup> = (V<sub>θ</sub>(s<sub>t</sub>) − V<sub>t</sub><sup>targ</sup>)²</div>
+      <p>MSE between predicted value and target value. Trains the critic to accurately predict returns.</p>
+    </div>
+    <div class="card card-accent3">
+      <h4>S — Entropy Bonus</h4>
+      <div class="math" style="font-size:.78rem;text-align:left;margin:.4rem 0">S[π<sub>θ</sub>](s) = −Σ<sub>a</sub> π(a|s) log π(a|s)</div>
+      <p>Encourages exploration by preventing the policy from becoming too deterministic too quickly.</p>
+    </div>
+  </div>
+
+  <h3>Actor-Critic Architecture &amp; Weight Update Procedure</h3>
+  <p>PPO uses a <strong>shared backbone</strong> with two separate heads. Understanding exactly <em>how gradients flow</em> through this architecture — and how parameters are updated — is essential for implementation.</p>
+
+  <!-- ARCHITECTURE + UPDATE DIAGRAM -->
+  <div class="update-diagram reveal">
+
+    <!-- Row 1: Input -->
+    <div class="ud-section-label">INPUT</div>
+    <div class="ud-row">
+      <div class="ud-box input">State s<sub>t</sub><br><span style="font-size:.65rem;color:var(--muted)">observations</span></div>
+    </div>
+    <div class="ud-connector"></div>
+
+    <!-- Row 2: Backbone -->
+    <div class="ud-section-label">SHARED BACKBONE (parameters θ<sub>shared</sub>)</div>
+    <div class="ud-row">
+      <div class="ud-box backbone">
+        CNN / MLP / Transformer<br>
+        <span style="font-size:.72rem;color:var(--muted)">φ(s<sub>t</sub> ; θ<sub>shared</sub>)</span><br>
+        <span style="font-size:.65rem;color:var(--muted)">shared feature extraction</span>
+      </div>
+    </div>
+
+    <!-- Connector splits into two -->
+    <div style="display:flex;justify-content:center;margin:.3rem 0">
+      <div style="display:flex;width:260px;justify-content:space-between;position:relative">
+        <div style="width:1px;height:1.5rem;background:var(--border);margin-left:25%"></div>
+        <div style="width:1px;height:1.5rem;background:var(--border);margin-right:25%"></div>
+        <div style="position:absolute;top:0;left:25%;right:25%;height:1px;background:var(--border);top:0"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Two heads -->
+    <div class="ud-section-label">SEPARATE HEADS</div>
+    <div class="ud-split" style="margin-bottom:.5rem">
+      <div class="ud-branch">
+        <div class="ud-box actor">
+          ACTOR HEAD<br>
+          <span style="font-size:.72rem">π<sub>θ<sub>actor</sub></sub>(a|s)</span><br>
+          <span style="font-size:.65rem;color:var(--muted)">outputs: logits (discrete)<br>or μ, σ (continuous)</span>
+        </div>
+        <div class="ud-arrow">↓</div>
+        <div class="ud-box actor" style="font-size:.72rem">
+          Sample action a<sub>t</sub><br>
+          compute log π<sub>θ</sub>(a<sub>t</sub>|s<sub>t</sub>)
+        </div>
+      </div>
+      <div class="ud-branch">
+        <div class="ud-box critic">
+          CRITIC HEAD<br>
+          <span style="font-size:.72rem">V<sub>θ<sub>critic</sub></sub>(s)</span><br>
+          <span style="font-size:.65rem;color:var(--muted)">outputs: scalar value<br>V̂(s<sub>t</sub>) ∈ ℝ</span>
+        </div>
+        <div class="ud-arrow">↓</div>
+        <div class="ud-box critic" style="font-size:.72rem">
+          Compute Â<sub>t</sub> = G<sub>t</sub> − V̂(s<sub>t</sub>)<br>
+          target V<sub>t</sub><sup>targ</sup> = Â<sub>t</sub> + V̂(s<sub>t</sub>)
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 4: Losses -->
+    <div class="ud-hline"></div>
+    <div class="ud-section-label">THREE LOSS COMPONENTS (computed simultaneously)</div>
+    <div class="ud-split" style="align-items:flex-start;gap:1rem">
+      <div class="ud-branch">
+        <div class="ud-box loss" style="border-color:var(--accent);color:var(--accent)">
+          <div style="font-size:.65rem;margin-bottom:.3rem;color:var(--accent)">① POLICY LOSS</div>
+          L<sup>CLIP</sup>(θ)<br>
+          <span style="font-size:.65rem;color:var(--muted)">= −𝔼[min(r·Â, clip(r,1±ε)·Â)]<br>negative: we maximise</span>
+        </div>
+        <div class="grad-tag">∇ through actor head<br>+ backbone (shared)</div>
+      </div>
+      <div class="ud-branch">
+        <div class="ud-box loss" style="border-color:var(--accent2);color:var(--accent2)">
+          <div style="font-size:.65rem;margin-bottom:.3rem;color:var(--accent2)">② VALUE LOSS</div>
+          c<sub>1</sub>·L<sup>VF</sup>(θ)<br>
+          <span style="font-size:.65rem;color:var(--muted)">= c<sub>1</sub>·(V̂(s<sub>t</sub>)−V<sub>t</sub><sup>targ</sup>)²<br>c<sub>1</sub> ≈ 0.5</span>
+        </div>
+        <div class="grad-tag">∇ through critic head<br>+ backbone (shared)</div>
+      </div>
+      <div class="ud-branch">
+        <div class="ud-box loss" style="border-color:var(--accent3);color:var(--accent3)">
+          <div style="font-size:.65rem;margin-bottom:.3rem;color:var(--accent3)">③ ENTROPY BONUS</div>
+          −c<sub>2</sub>·S[π<sub>θ</sub>]<br>
+          <span style="font-size:.65rem;color:var(--muted)">= −c<sub>2</sub>·H(π)<br>c<sub>2</sub> ≈ 0.01, negative: maximise entropy</span>
+        </div>
+        <div class="grad-tag">∇ through actor head<br>+ backbone (shared)</div>
+      </div>
+    </div>
+
+    <!-- Row 5: Combined loss -->
+    <div class="ud-hline"></div>
+    <div class="ud-section-label">COMBINED LOSS (single backward pass)</div>
+    <div class="ud-row">
+      <div class="ud-box total">
+        L<sup>PPO</sup>(θ) = L<sup>CLIP</sup>(θ) − c<sub>1</sub>·L<sup>VF</sup>(θ) + c<sub>2</sub>·S[π<sub>θ</sub>](s<sub>t</sub>)
+      </div>
+    </div>
+    <div class="ud-connector"></div>
+
+    <!-- Row 6: Backward -->
+    <div class="ud-section-label">BACKPROPAGATION</div>
+    <div class="ud-row">
+      <div class="ud-box" style="background:var(--surface2);border-color:var(--border);font-size:.75rem;text-align:left;min-width:340px;padding:1rem">
+        <div style="margin-bottom:.5rem;color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:.65rem">GRADIENT FLOW</div>
+        <div style="font-size:.75rem;color:#c0c0d8;line-height:1.8">
+          ① ∂L<sup>CLIP</sup>/∂θ<sub>actor</sub> → actor head weights<br>
+          ② ∂L<sup>VF</sup>/∂θ<sub>critic</sub> → critic head weights<br>
+          ③ (∂L<sup>CLIP</sup> + ∂L<sup>VF</sup> + ∂S)/∂θ<sub>shared</sub> → backbone weights<br>
+          <span style="color:var(--muted);font-size:.7rem">All three gradients flow through the shared backbone simultaneously</span>
+        </div>
+      </div>
+    </div>
+    <div class="ud-connector"></div>
+
+    <!-- Row 7: Gradient clip + optimizer -->
+    <div class="ud-section-label">GRADIENT CLIPPING + PARAMETER UPDATE</div>
+    <div class="ud-row" style="gap:1rem;flex-wrap:wrap">
+      <div class="ud-box" style="background:var(--surface2);font-size:.75rem;min-width:200px">
+        <div style="color:var(--accent);font-size:.65rem;margin-bottom:.3rem;font-family:'IBM Plex Mono',monospace">CLIP GRADIENTS</div>
+        ‖g‖ &gt; g<sub>max</sub>?<br>
+        g ← g<sub>max</sub> · g / ‖g‖<br>
+        <span style="font-size:.65rem;color:var(--muted)">g<sub>max</sub> = 0.5 typically</span>
+      </div>
+      <div class="ud-arrow">→</div>
+      <div class="ud-box" style="background:var(--surface2);font-size:.75rem;min-width:200px">
+        <div style="color:var(--accent3);font-size:.65rem;margin-bottom:.3rem;font-family:'IBM Plex Mono',monospace">ADAM UPDATE</div>
+        m ← β<sub>1</sub>m + (1−β<sub>1</sub>)g<br>
+        v ← β<sub>2</sub>v + (1−β<sub>2</sub>)g²<br>
+        θ ← θ − α · m̂/√v̂
+        <span style="font-size:.65rem;color:var(--muted);display:block;margin-top:.3rem">α ≈ 3×10⁻⁴, ε<sub>Adam</sub> = 10⁻⁵</span>
+      </div>
+      <div class="ud-arrow">→</div>
+      <div class="ud-box" style="background:rgba(124,106,247,0.1);border-color:var(--accent);font-size:.75rem;min-width:160px">
+        <div style="color:var(--accent);font-size:.65rem;margin-bottom:.3rem;font-family:'IBM Plex Mono',monospace">NEW PARAMETERS</div>
+        θ<sub>shared</sub> updated<br>
+        θ<sub>actor</sub> updated<br>
+        θ<sub>critic</sub> updated
+      </div>
+    </div>
+
+    <!-- Row 8: Copy old policy -->
+    <div class="ud-hline"></div>
+    <div class="ud-section-label">AFTER K EPOCHS: SYNC OLD POLICY</div>
+    <div class="ud-row">
+      <div class="ud-box" style="background:var(--surface2);font-size:.78rem;color:#c0c0d8">
+        θ<sub>old</sub> ← θ &nbsp;&nbsp; (copy all parameters) &nbsp;&nbsp; discard rollout buffer &nbsp;&nbsp; collect new data
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout reveal">
+    <div class="callout-title">// WHY SHARED BACKBONE?</div>
+    The backbone learns general representations useful for <em>both</em> the policy and value estimation. Gradients from both L<sup>CLIP</sup> and L<sup>VF</sup> flow through it simultaneously — the backbone is being trained to extract features that help predict good actions <strong>and</strong> accurate values at the same time. The value coefficient c<sub>1</sub> balances how much each loss influences the shared weights.
+  </div>
+
+  <div class="callout warn reveal">
+    <div class="callout-title">// SEPARATE vs SHARED NETWORKS</div>
+    With a <strong>shared backbone</strong>: set c<sub>1</sub> = 0.5. Gradients from both heads fight over shared weights — this can cause instability if value loss is much larger than policy loss.<br><br>
+    With <strong>separate networks</strong>: set c<sub>1</sub> = 1.0, run two separate optimisers. More stable but uses more memory and compute. Common in robotics and high-dimensional tasks.
+  </div>
+
+
+  <h3>PPO Algorithm: Step by Step</h3>
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Collect Rollouts</h4>
+        <p>Run current policy π<sub>θ<sub>old</sub></sub> in parallel environments for T timesteps. Collect (s<sub>t</sub>, a<sub>t</sub>, r<sub>t</sub>, s<sub>t+1</sub>, done<sub>t</sub>) for each step. Store log probabilities log π<sub>θ<sub>old</sub></sub>(a<sub>t</sub>|s<sub>t</sub>).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Compute Advantages and Returns</h4>
+        <p>Use the critic V<sub>θ</sub> to compute TD errors δ<sub>t</sub>. Apply GAE backwards to get Â<sub>t</sub>. Compute value targets: V<sub>t</sub><sup>targ</sup> = Â<sub>t</sub> + V<sub>θ</sub>(s<sub>t</sub>).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Normalize Advantages</h4>
+        <p>Normalize advantages across the batch: Â ← (Â − mean(Â)) / (std(Â) + ε). This stabilizes training and makes the gradient scale-invariant.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>K Epochs of Minibatch Updates</h4>
+        <p>For K epochs (typically 4–10), shuffle the rollout buffer, split into minibatches of size M. For each minibatch: compute current log probs, ratios r(θ), clip, compute full loss L<sup>PPO</sup>, backpropagate, clip gradients, update θ.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Update Old Policy</h4>
+        <p>Set θ<sub>old</sub> ← θ. Discard the rollout buffer (on-policy). Repeat from step 1.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Training Visualization -->
+  <div class="demo-container reveal">
+    <div class="demo-header">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span style="margin-left:.4rem">INTERACTIVE: Simulated PPO Training Curve</span>
+    </div>
+    <div class="demo-body">
+      <canvas id="train-canvas"></canvas>
+      <div class="train-controls">
+        <button class="ctrl-btn run" id="train-btn" onclick="toggleTraining()">▶ Start Training</button>
+        <button class="ctrl-btn" onclick="resetTraining()">↻ Reset</button>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--muted);margin-left:.5rem">
+          Episode: <span id="ep-count" style="color:var(--accent)">0</span> &nbsp;|&nbsp;
+          Avg Return: <span id="avg-return" style="color:var(--accent3)">—</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 7: IMPLEMENTATION ═══════════════════ -->
+<hr class="divider">
+<section id="implementation">
+  <div class="section-tag">07 // IMPLEMENTATION</div>
+  <h2>Production-Quality PPO in PyTorch</h2>
+
+  <h3>1. Actor-Critic Network</h3>
+
+  <div class="code-block reveal">
+    <div class="code-label">PYTHON</div>
+    <pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+<span class="k">import</span> torch.nn.functional <span class="k">as</span> F
+<span class="k">from</span> torch.distributions <span class="k">import</span> Categorical, Normal
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">class</span> <span class="v">ActorCritic</span>(nn.<span class="v">Module</span>):
+    <span class="s">"""Shared-backbone actor-critic for PPO."""</span>
+    
+    <span class="k">def</span> <span class="f">__init__</span>(self, obs_dim: <span class="v">int</span>, act_dim: <span class="v">int</span>,
+                 hidden: <span class="v">int</span> = <span class="n">64</span>, continuous: <span class="v">bool</span> = <span class="k">False</span>):
+        <span class="f">super</span>().<span class="f">__init__</span>()
+        self.continuous = continuous
+        
+        <span class="c"># Shared feature extractor (orthogonal init is key!)</span>
+        self.backbone = nn.<span class="v">Sequential</span>(
+            nn.<span class="f">Linear</span>(obs_dim, hidden),  nn.<span class="v">Tanh</span>(),
+            nn.<span class="f">Linear</span>(hidden, hidden),   nn.<span class="v">Tanh</span>(),
+        )
+        
+        <span class="c"># Actor head: outputs action distribution parameters</span>
+        self.actor = nn.<span class="f">Linear</span>(hidden, act_dim)
+        
+        <span class="c"># Critic head: outputs scalar state value</span>
+        self.critic = nn.<span class="f">Linear</span>(hidden, <span class="n">1</span>)
+        
+        <span class="c"># For continuous actions: learnable log_std</span>
+        <span class="k">if</span> continuous:
+            self.log_std = nn.<span class="v">Parameter</span>(torch.<span class="f">zeros</span>(act_dim))
+        
+        <span class="c"># Orthogonal initialization (crucial for PPO stability)</span>
+        self.<span class="f">_init_weights</span>()
+    
+    <span class="k">def</span> <span class="f">_init_weights</span>(self):
+        <span class="k">for</span> m <span class="k">in</span> self.backbone:
+            <span class="k">if</span> <span class="f">isinstance</span>(m, nn.<span class="v">Linear</span>):
+                nn.init.<span class="f">orthogonal_</span>(m.weight, gain=np.<span class="f">sqrt</span>(<span class="n">2</span>))
+                nn.init.<span class="f">constant_</span>(m.bias, <span class="n">0.0</span>)
+        <span class="c"># Actor: small init so policy starts near uniform</span>
+        nn.init.<span class="f">orthogonal_</span>(self.actor.weight, gain=<span class="n">0.01</span>)
+        <span class="c"># Critic: standard init</span>
+        nn.init.<span class="f">orthogonal_</span>(self.critic.weight, gain=<span class="n">1.0</span>)
+    
+    <span class="k">def</span> <span class="f">get_value</span>(self, obs):
+        <span class="k">return</span> self.<span class="f">critic</span>(self.<span class="f">backbone</span>(obs))
+    
+    <span class="k">def</span> <span class="f">get_action_and_value</span>(self, obs, action=<span class="k">None</span>):
+        features = self.<span class="f">backbone</span>(obs)
+        value = self.<span class="f">critic</span>(features)
+        
+        <span class="k">if</span> self.continuous:
+            mu = self.<span class="f">actor</span>(features)
+            std = self.log_std.<span class="f">exp</span>().<span class="f">expand_as</span>(mu)
+            dist = <span class="v">Normal</span>(mu, std)
+        <span class="k">else</span>:
+            logits = self.<span class="f">actor</span>(features)
+            dist = <span class="v">Categorical</span>(<span class="f">logits</span>=logits)
+        
+        <span class="k">if</span> action <span class="k">is</span> <span class="k">None</span>:
+            action = dist.<span class="f">sample</span>()
+        
+        log_prob = dist.<span class="f">log_prob</span>(action)
+        entropy = dist.<span class="f">entropy</span>()
+        
+        <span class="k">return</span> action, log_prob, entropy, value</pre>
+  </div>
+
+  <h3>2. Rollout Buffer</h3>
+
+  <div class="code-block reveal">
+    <div class="code-label">PYTHON</div>
+    <pre><span class="k">class</span> <span class="v">RolloutBuffer</span>:
+    <span class="s">"""Stores on-policy experience for PPO updates."""</span>
+    
+    <span class="k">def</span> <span class="f">__init__</span>(self, T: <span class="v">int</span>, n_envs: <span class="v">int</span>, obs_dim: <span class="v">int</span>,
+                 act_dim: <span class="v">int</span>, gamma: <span class="v">float</span>, lam: <span class="v">float</span>):
+        self.T, self.n_envs = T, n_envs
+        self.gamma, self.lam = gamma, lam
+        
+        <span class="c"># Pre-allocate tensors for efficiency</span>
+        self.obs      = torch.<span class="f">zeros</span>(T, n_envs, obs_dim)
+        self.actions  = torch.<span class="f">zeros</span>(T, n_envs, act_dim)
+        self.rewards  = torch.<span class="f">zeros</span>(T, n_envs)
+        self.dones    = torch.<span class="f">zeros</span>(T, n_envs)
+        self.values   = torch.<span class="f">zeros</span>(T, n_envs)
+        self.log_probs= torch.<span class="f">zeros</span>(T, n_envs)
+        self.advantages = torch.<span class="f">zeros</span>(T, n_envs)
+        self.returns  = torch.<span class="f">zeros</span>(T, n_envs)
+        self.ptr = <span class="n">0</span>
+    
+    <span class="k">def</span> <span class="f">store</span>(self, obs, act, rew, done, val, logp):
+        self.obs[self.ptr] = obs
+        self.actions[self.ptr] = act
+        self.rewards[self.ptr] = rew
+        self.dones[self.ptr] = done
+        self.values[self.ptr] = val
+        self.log_probs[self.ptr] = logp
+        self.ptr += <span class="n">1</span>
+    
+    <span class="k">def</span> <span class="f">compute_gae</span>(self, last_value, last_done):
+        <span class="s">"""Compute GAE advantages and value targets."""</span>
+        gae = <span class="n">0</span>
+        <span class="k">for</span> t <span class="k">in</span> <span class="f">reversed</span>(<span class="f">range</span>(self.T)):
+            <span class="k">if</span> t == self.T - <span class="n">1</span>:
+                next_non_terminal = <span class="n">1.0</span> - last_done
+                next_value = last_value
+            <span class="k">else</span>:
+                next_non_terminal = <span class="n">1.0</span> - self.dones[t + <span class="n">1</span>]
+                next_value = self.values[t + <span class="n">1</span>]
+            
+            <span class="c"># TD error: δₜ = rₜ + γ·V(sₜ₊₁) − V(sₜ)</span>
+            delta = (self.rewards[t]
+                     + self.gamma * next_value * next_non_terminal
+                     - self.values[t])
+            
+            <span class="c"># Âₜ = δₜ + γλ·Âₜ₊₁  (recursive GAE)</span>
+            gae = delta + self.gamma * self.lam * next_non_terminal * gae
+            self.advantages[t] = gae
+        
+        <span class="c"># Value targets for critic training</span>
+        self.returns = self.advantages + self.values
+    
+    <span class="k">def</span> <span class="f">get_batches</span>(self, batch_size: <span class="v">int</span>):
+        <span class="s">"""Flatten buffer and yield random minibatches."""</span>
+        B = self.T * self.n_envs
+        
+        <span class="c"># Normalize advantages (batch-level)</span>
+        adv = self.advantages.<span class="f">reshape</span>(-<span class="n">1</span>)
+        adv = (adv - adv.<span class="f">mean</span>()) / (adv.<span class="f">std</span>() + <span class="n">1e-8</span>)
+        
+        idx = torch.<span class="f">randperm</span>(B)
+        <span class="k">for</span> start <span class="k">in</span> <span class="f">range</span>(<span class="n">0</span>, B, batch_size):
+            mb = idx[start : start + batch_size]
+            <span class="k">yield</span> (
+                self.obs.<span class="f">reshape</span>(B, -<span class="n">1</span>)[mb],
+                self.actions.<span class="f">reshape</span>(B, -<span class="n">1</span>)[mb],
+                self.log_probs.<span class="f">reshape</span>(-<span class="n">1</span>)[mb],
+                adv[mb],
+                self.returns.<span class="f">reshape</span>(-<span class="n">1</span>)[mb],
+            )</pre>
+  </div>
+
+  <h3>3. PPO Update Step</h3>
+
+  <div class="code-block reveal">
+    <div class="code-label">PYTHON</div>
+    <pre><span class="k">def</span> <span class="f">ppo_update</span>(
+    agent: <span class="v">ActorCritic</span>,
+    buffer: <span class="v">RolloutBuffer</span>,
+    optimizer: torch.optim.<span class="v">Optimizer</span>,
+    clip_eps: <span class="v">float</span> = <span class="n">0.2</span>,
+    value_coef: <span class="v">float</span> = <span class="n">0.5</span>,
+    entropy_coef: <span class="v">float</span> = <span class="n">0.01</span>,
+    max_grad_norm: <span class="v">float</span> = <span class="n">0.5</span>,
+    n_epochs: <span class="v">int</span> = <span class="n">10</span>,
+    batch_size: <span class="v">int</span> = <span class="n">64</span>,
+):
+    stats = {<span class="s">'policy_loss'</span>: [], <span class="s">'value_loss'</span>: [], 
+             <span class="s">'entropy'</span>: [], <span class="s">'clip_frac'</span>: [], <span class="s">'approx_kl'</span>: []}
+    
+    <span class="k">for</span> epoch <span class="k">in</span> <span class="f">range</span>(n_epochs):
+        <span class="k">for</span> obs, acts, old_logp, advs, returns <span class="k">in</span> buffer.<span class="f">get_batches</span>(batch_size):
+            
+            <span class="c"># Forward pass with CURRENT policy</span>
+            _, new_logp, entropy, new_value = agent.<span class="f">get_action_and_value</span>(obs, acts)
+            new_value = new_value.<span class="f">squeeze</span>(-<span class="n">1</span>)
+            
+            <span class="c"># ── PROBABILITY RATIO ──</span>
+            <span class="c"># r(θ) = π_θ(a|s) / π_θ_old(a|s) = exp(log π_θ − log π_θ_old)</span>
+            log_ratio = new_logp - old_logp
+            ratio = log_ratio.<span class="f">exp</span>()
+            
+            <span class="c"># ── CLIP OBJECTIVE ──</span>
+            surr1 = ratio * advs                             <span class="c"># unclipped</span>
+            surr2 = torch.<span class="f">clamp</span>(ratio, <span class="n">1</span>-clip_eps, <span class="n">1</span>+clip_eps) * advs  <span class="c"># clipped</span>
+            policy_loss = -torch.<span class="f">min</span>(surr1, surr2).<span class="f">mean</span>()  <span class="c"># negative: we maximize</span>
+            
+            <span class="c"># ── VALUE LOSS (optionally clipped) ──</span>
+            value_loss = F.<span class="f">mse_loss</span>(new_value, returns)
+            
+            <span class="c"># ── ENTROPY BONUS ── (maximized → subtract from loss)</span>
+            entropy_loss = -entropy.<span class="f">mean</span>()
+            
+            <span class="c"># ── COMBINED LOSS ──</span>
+            loss = policy_loss + value_coef * value_loss + entropy_coef * entropy_loss
+            
+            <span class="c"># ── BACKPROP + GRADIENT CLIP ──</span>
+            optimizer.<span class="f">zero_grad</span>()
+            loss.<span class="f">backward</span>()
+            nn.utils.<span class="f">clip_grad_norm_</span>(agent.<span class="f">parameters</span>(), max_grad_norm)
+            optimizer.<span class="f">step</span>()
+            
+            <span class="c"># Diagnostics</span>
+            <span class="k">with</span> torch.<span class="f">no_grad</span>():
+                approx_kl = ((ratio - <span class="n">1</span>) - log_ratio).<span class="f">mean</span>().<span class="f">item</span>()
+                clip_frac = (torch.<span class="f">abs</span>(ratio - <span class="n">1</span>) > clip_eps).<span class="f">float</span>().<span class="f">mean</span>().<span class="f">item</span>()
+            
+            stats[<span class="s">'policy_loss'</span>].<span class="f">append</span>(policy_loss.<span class="f">item</span>())
+            stats[<span class="s">'value_loss'</span>].<span class="f">append</span>(value_loss.<span class="f">item</span>())
+            stats[<span class="s">'entropy'</span>].<span class="f">append</span>(-entropy_loss.<span class="f">item</span>())
+            stats[<span class="s">'approx_kl'</span>].<span class="f">append</span>(approx_kl)
+            stats[<span class="s">'clip_frac'</span>].<span class="f">append</span>(clip_frac)
+    
+    <span class="k">return</span> {k: np.<span class="f">mean</span>(v) <span class="k">for</span> k, v <span class="k">in</span> stats.<span class="f">items</span>()}</pre>
+  </div>
+
+  <h3>4. Main Training Loop</h3>
+
+  <div class="code-block reveal">
+    <div class="code-label">PYTHON</div>
+    <pre><span class="k">def</span> <span class="f">train_ppo</span>(env_fn, total_timesteps=<span class="n">1_000_000</span>):
+    <span class="c"># Hyperparameters</span>
+    N_ENVS   = <span class="n">8</span>      <span class="c"># parallel environments</span>
+    T        = <span class="n">2048</span>   <span class="c"># steps per rollout per env</span>
+    EPOCHS   = <span class="n">10</span>     <span class="c"># update epochs per rollout</span>
+    BATCH    = <span class="n">64</span>     <span class="c"># minibatch size</span>
+    LR       = <span class="n">3e-4</span>   <span class="c"># learning rate (often annealed)</span>
+    GAMMA    = <span class="n">0.99</span>   <span class="c"># discount factor</span>
+    LAM      = <span class="n">0.95</span>   <span class="c"># GAE lambda</span>
+    CLIP_EPS = <span class="n">0.2</span>    <span class="c"># clip epsilon</span>
+    
+    envs   = <span class="f">VecEnv</span>(env_fn, N_ENVS)
+    agent  = <span class="v">ActorCritic</span>(obs_dim, act_dim)
+    optim  = torch.optim.<span class="v">Adam</span>(agent.<span class="f">parameters</span>(), lr=LR, eps=<span class="n">1e-5</span>)
+    buffer = <span class="v">RolloutBuffer</span>(T, N_ENVS, obs_dim, act_dim, GAMMA, LAM)
+    
+    obs = envs.<span class="f">reset</span>()
+    n_updates = total_timesteps // (T * N_ENVS)
+    
+    <span class="k">for</span> update <span class="k">in</span> <span class="f">range</span>(n_updates):
+        
+        <span class="c"># ── OPTIONAL: Linear LR annealing ──</span>
+        frac = <span class="n">1.0</span> - update / n_updates
+        optim.param_groups[<span class="n">0</span>][<span class="s">'lr'</span>] = LR * frac
+        
+        <span class="c"># ── STEP 1: Collect rollouts ──</span>
+        buffer.ptr = <span class="n">0</span>
+        <span class="k">for</span> t <span class="k">in</span> <span class="f">range</span>(T):
+            <span class="k">with</span> torch.<span class="f">no_grad</span>():
+                action, logp, _, value = agent.<span class="f">get_action_and_value</span>(obs)
+            next_obs, reward, done, info = envs.<span class="f">step</span>(action)
+            buffer.<span class="f">store</span>(obs, action, reward, done, value, logp)
+            obs = next_obs
+        
+        <span class="c"># ── STEP 2: Compute GAE ──</span>
+        <span class="k">with</span> torch.<span class="f">no_grad</span>():
+            last_val = agent.<span class="f">get_value</span>(obs)
+        buffer.<span class="f">compute_gae</span>(last_val, done)
+        
+        <span class="c"># ── STEP 3: PPO Update ──</span>
+        stats = <span class="f">ppo_update</span>(agent, buffer, optim,
+                            clip_eps=CLIP_EPS, n_epochs=EPOCHS, batch_size=BATCH)
+        
+        <span class="c"># Log every 10 updates</span>
+        <span class="k">if</span> update % <span class="n">10</span> == <span class="n">0</span>:
+            <span class="f">print</span>(<span class="s">f"Update {update} | "</span>
+                  <span class="s">f"Policy: {stats['policy_loss']:.3f} | "</span>
+                  <span class="s">f"Value: {stats['value_loss']:.3f} | "</span>
+                  <span class="s">f"KL: {stats['approx_kl']:.4f} | "</span>
+                  <span class="s">f"Clip%: {stats['clip_frac']:.2f}"</span>)</pre>
+  </div>
+</section>
+
+<!-- ═══════════════════ SECTION 8: TIPS & TRICKS ═══════════════════ -->
+<hr class="divider">
+<section id="tips">
+  <div class="section-tag">08 // TIPS & TRICKS</div>
+  <h2>Making PPO Work in Practice</h2>
+
+  <h3>Critical Implementation Details</h3>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Observation Normalization</h4>
+        <p>Normalize observations using a running mean and variance. This is <em>often the most important trick</em>. Use a running normalization wrapper that updates during rollouts.</p>
+        <div class="code-block" style="margin-top:.5rem">
+          <pre><span class="c"># Running normalization</span>
+obs = (obs - obs_rms.mean) / (np.<span class="f">sqrt</span>(obs_rms.var) + <span class="n">1e-8</span>)
+obs = np.<span class="f">clip</span>(obs, -<span class="n">10</span>, <span class="n">10</span>)  <span class="c"># clip to prevent extreme values</span></pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Reward Normalization/Scaling</h4>
+        <p>Normalize rewards using a running estimate of the return's standard deviation. Or simply scale rewards to a known range. Without this, value learning is unstable.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Gradient Clipping</h4>
+        <p>Always clip gradients by global norm (max_grad_norm=0.5). This prevents catastrophic updates when advantages are large.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Learning Rate Annealing</h4>
+        <p>Linearly decay learning rate from initial value to 0 over training. Helps fine-tune the policy in later stages when it's close to optimal.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Clipped Value Loss</h4>
+        <p>Optionally clip the value function update too (similar to policy clip). Prevents the value function from making large updates:</p>
+        <div class="code-block" style="margin-top:.5rem">
+          <pre>v_clipped = old_val + torch.<span class="f">clamp</span>(new_val - old_val, -eps, eps)
+v_loss1 = (new_val - returns).<span class="f">pow</span>(<span class="n">2</span>)
+v_loss2 = (v_clipped - returns).<span class="f">pow</span>(<span class="n">2</span>)
+value_loss = torch.<span class="f">max</span>(v_loss1, v_loss2).<span class="f">mean</span>()</pre>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num"></div>
+      <div class="step-body">
+        <h4>Early Stopping on KL</h4>
+        <p>Stop update epochs early if approximate KL divergence exceeds a threshold (e.g., 0.015). This prevents over-optimizing on stale data:</p>
+        <div class="code-block" style="margin-top:.5rem">
+          <pre><span class="k">if</span> approx_kl > <span class="n">1.5</span> * target_kl:
+    <span class="f">break</span>  <span class="c"># stop epochs early</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Hyperparameter Guide</h3>
+
+  <table class="reveal">
+    <thead>
+      <tr><th>Hyperparameter</th><th>Typical Value</th><th>Effect of Increasing</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>clip_eps (ε)</td><td class="mid">0.1 – 0.2</td><td>More aggressive updates</td><td>0.1 for fine-tuning, 0.2 for training from scratch</td></tr>
+      <tr><td>n_epochs (K)</td><td class="mid">4 – 10</td><td>More reuse of data</td><td>Too high → policy diverges from old policy</td></tr>
+      <tr><td>γ (gamma)</td><td class="mid">0.99</td><td>Values long-term more</td><td>Lower (0.95) for faster-reward envs</td></tr>
+      <tr><td>λ (gae_lambda)</td><td class="mid">0.95</td><td>More variance, less bias</td><td>0.95 works almost everywhere</td></tr>
+      <tr><td>lr</td><td class="mid">3e-4</td><td>Faster but less stable</td><td>Always anneal; Adam eps=1e-5 not 1e-8</td></tr>
+      <tr><td>entropy_coef</td><td class="mid">0.01</td><td>More exploration</td><td>Reduce over time or set 0 for exploitation</td></tr>
+      <tr><td>value_coef</td><td class="mid">0.5</td><td>Stronger critic training</td><td>Lower if shared backbone; or use 1.0 with separate nets</td></tr>
+      <tr><td>T (rollout len)</td><td class="mid">128 – 2048</td><td>Lower variance advantages</td><td>2048 for continuous control, 128 for Atari</td></tr>
+      <tr><td>N_envs</td><td class="mid">4 – 64</td><td>More parallelism</td><td>Use SubprocVecEnv for true parallelism</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Common Failure Modes</h3>
+
+  <div class="card-grid reveal">
+    <div class="card card-danger">
+      <h4>🔴 KL explodes</h4>
+      <p>Early KL &gt; 0.05 constantly. Fix: lower learning rate, add early stopping, check advantage normalization.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 Policy entropy → 0</h4>
+      <p>Policy collapses to a single action immediately. Fix: increase entropy coefficient, check reward scaling.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 Value loss diverges</h4>
+      <p>NaN in training. Fix: normalize observations and rewards, lower learning rate, add gradient clipping.</p>
+    </div>
+    <div class="card card-danger">
+      <h4>🔴 No learning</h4>
+      <p>Flat reward curve. Check: environment reward scaling, γ appropriate for horizon, policy can actually explore.</p>
+    </div>
+  </div>
+
+  <h3>PPO vs Other Algorithms</h3>
+
+  <table class="reveal">
+    <thead>
+      <tr><th>Algorithm</th><th>Sample Efficiency</th><th>Stability</th><th>Complexity</th><th>Best For</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>REINFORCE</td><td class="no">Very Low</td><td class="no">Low</td><td class="yes">Simple</td><td>Teaching RL</td></tr>
+      <tr><td>A3C/A2C</td><td class="mid">Medium</td><td class="mid">Medium</td><td class="yes">Simple</td><td>Atari, simple envs</td></tr>
+      <tr><td><strong>PPO</strong></td><td class="mid">Medium</td><td class="yes">High</td><td class="yes">Simple</td><td><strong>General default</strong></td></tr>
+      <tr><td>TRPO</td><td class="mid">Medium</td><td class="yes">Very High</td><td class="no">Very Complex</td><td>When guarantees matter</td></tr>
+      <tr><td>SAC</td><td class="yes">High</td><td class="yes">High</td><td class="mid">Medium</td><td>Continuous control</td></tr>
+      <tr><td>TD3</td><td class="yes">High</td><td class="yes">High</td><td class="mid">Medium</td><td>Continuous, deterministic</td></tr>
+      <tr><td>DQN</td><td class="yes">High</td><td class="mid">Medium</td><td class="mid">Medium</td><td>Discrete actions only</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip reveal">
+    <div class="callout-title">// WHEN TO USE PPO</div>
+    PPO is the <strong>default choice</strong> for most RL problems: it's stable, robust to hyperparameters, scales well with parallel environments, and works for both discrete and continuous action spaces. Use SAC/TD3 when sample efficiency is critical (real-world robotics). Use DQN for discrete actions with large replay buffers. PPO was used in OpenAI Five (Dota 2), ChatGPT RLHF, and most robotics locomotion benchmarks.
+  </div>
+
+  <h3>Recommended Libraries</h3>
+
+  <div class="card-grid reveal">
+    <div class="card card-accent">
+      <h4>Stable-Baselines3</h4>
+      <p>Production-ready PPO in PyTorch. Best for getting results quickly. <code style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--accent3)">pip install stable-baselines3</code></p>
+    </div>
+    <div class="card card-accent2">
+      <h4>CleanRL</h4>
+      <p>Single-file, research-quality PPO implementations. Ideal for understanding the code. From the paper "CleanRL: High-quality RL implementations".</p>
+    </div>
+    <div class="card card-accent3">
+      <h4>TorchRL / RLlib</h4>
+      <p>For large-scale distributed training. RLlib handles cluster deployment; TorchRL is PyTorch-native with composable components.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  PPO: Proximal Policy Optimization — Schulman et al., 2017 &nbsp;·&nbsp; arXiv:1707.06347<br>
+  <span style="color:var(--accent);margin-top:.5rem;display:block">Built as a comprehensive study guide</span>
+</footer>
+
+<!-- ══════════════════════ SCRIPTS ══════════════════════ -->
+<script>
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+reveals.forEach(el => obs.observe(el));
+
+// ── ACTIVE NAV ──
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id; });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+  });
+});
+
+// ── CLIP VISUALIZER ──
+const clipCanvas = document.getElementById('clip-canvas');
+const clipCtx = clipCanvas.getContext('2d');
+const advSlider = document.getElementById('adv-slider');
+const epsSlider = document.getElementById('eps-slider');
+const advVal = document.getElementById('adv-val');
+const epsVal = document.getElementById('eps-val');
+
+function resizeCanvas(canvas) {
+  canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+  canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+  clipCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+function drawClipChart() {
+  const W = clipCanvas.offsetWidth, H = clipCanvas.offsetHeight;
+  const A = parseFloat(advSlider.value);
+  const eps = parseFloat(epsSlider.value);
+  advVal.textContent = (A >= 0 ? '+' : '') + A.toFixed(1);
+  epsVal.textContent = eps.toFixed(2);
+
+  clipCtx.clearRect(0, 0, W, H);
+
+  // Background
+  clipCtx.fillStyle = '#0d0d1a';
+  clipCtx.fillRect(0, 0, W, H);
+
+  const PAD = { l: 50, r: 20, t: 20, b: 35 };
+  const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+  const rMin = 0, rMax = 2.5;
+  const yMin = -4, yMax = 4;
+
+  const toX = r => PAD.l + (r - rMin) / (rMax - rMin) * cW;
+  const toY = v => PAD.t + (1 - (v - yMin) / (yMax - yMin)) * cH;
+
+  // Grid
+  clipCtx.strokeStyle = '#1e1e2e';
+  clipCtx.lineWidth = 1;
+  for (let v = -4; v <= 4; v++) {
+    clipCtx.beginPath();
+    clipCtx.moveTo(PAD.l, toY(v));
+    clipCtx.lineTo(PAD.l + cW, toY(v));
+    clipCtx.stroke();
+  }
+  for (let r = 0; r <= 2.5; r += 0.5) {
+    clipCtx.beginPath();
+    clipCtx.moveTo(toX(r), PAD.t);
+    clipCtx.lineTo(toX(r), PAD.t + cH);
+    clipCtx.stroke();
+  }
+
+  // Clip zone shading
+  clipCtx.fillStyle = 'rgba(124,106,247,0.06)';
+  clipCtx.fillRect(toX(1 - eps), PAD.t, toX(1 + eps) - toX(1 - eps), cH);
+
+  // Axes
+  clipCtx.strokeStyle = '#2a2a3a'; clipCtx.lineWidth = 1.5;
+  clipCtx.beginPath();
+  clipCtx.moveTo(PAD.l, toY(0)); clipCtx.lineTo(PAD.l + cW, toY(0)); clipCtx.stroke();
+  clipCtx.beginPath();
+  clipCtx.moveTo(PAD.l, PAD.t); clipCtx.lineTo(PAD.l, PAD.t + cH); clipCtx.stroke();
+
+  // Clip boundary lines
+  clipCtx.strokeStyle = 'rgba(124,106,247,0.4)'; clipCtx.lineWidth = 1;
+  clipCtx.setLineDash([4, 4]);
+  [1 - eps, 1 + eps].forEach(r => {
+    clipCtx.beginPath();
+    clipCtx.moveTo(toX(r), PAD.t);
+    clipCtx.lineTo(toX(r), PAD.t + cH);
+    clipCtx.stroke();
+  });
+  clipCtx.setLineDash([]);
+
+  const N = 200;
+  function plotLine(color, width, fn) {
+    clipCtx.strokeStyle = color; clipCtx.lineWidth = width;
+    clipCtx.beginPath();
+    for (let i = 0; i <= N; i++) {
+      const r = rMin + (i / N) * (rMax - rMin);
+      const v = fn(r);
+      if (v < yMin || v > yMax) { clipCtx.stroke(); clipCtx.beginPath(); continue; }
+      i === 0 ? clipCtx.moveTo(toX(r), toY(v)) : clipCtx.lineTo(toX(r), toY(v));
+    }
+    clipCtx.stroke();
+  }
+
+  // Unclipped: r * A
+  plotLine('#f7a26a', 1.5, r => r * A);
+  // Clipped: clip(r, 1-eps, 1+eps) * A
+  plotLine('#7c6af7', 1.5, r => Math.min(Math.max(r, 1 - eps), 1 + eps) * A);
+  // PPO = min(unclipped, clipped)
+  plotLine('#6af7c8', 2.5, r => Math.min(r * A, Math.min(Math.max(r, 1 - eps), 1 + eps) * A));
+
+  // Axis labels
+  clipCtx.fillStyle = '#7070a0';
+  clipCtx.font = '11px IBM Plex Mono, monospace';
+  clipCtx.textAlign = 'center';
+  for (let r = 0; r <= 2.5; r += 0.5) {
+    clipCtx.fillText(r.toFixed(1), toX(r), PAD.t + cH + 22);
+  }
+  clipCtx.textAlign = 'right';
+  for (let v = -3; v <= 3; v++) {
+    clipCtx.fillText(v, PAD.l - 6, toY(v) + 4);
+  }
+  clipCtx.fillStyle = '#505070';
+  clipCtx.font = '10px IBM Plex Mono, monospace';
+  clipCtx.textAlign = 'center';
+  clipCtx.fillText('ratio r(θ)', PAD.l + cW / 2, H - 4);
+
+  // Clip boundary labels
+  clipCtx.fillStyle = 'rgba(124,106,247,0.7)'; clipCtx.font = '10px IBM Plex Mono, monospace';
+  clipCtx.fillText('1−ε', toX(1 - eps), PAD.t + 14);
+  clipCtx.fillText('1+ε', toX(1 + eps), PAD.t + 14);
+}
+
+advSlider.addEventListener('input', drawClipChart);
+epsSlider.addEventListener('input', drawClipChart);
+window.addEventListener('resize', () => { resizeCanvas(clipCanvas); drawClipChart(); });
+resizeCanvas(clipCanvas);
+drawClipChart();
+
+// ── GAE TIMELINE ──
+function generateGAE() {
+  const T = 6, gamma = 0.99, lam = 0.95;
+  const rewards = Array.from({length: T}, () => (Math.random() * 2 - 0.5).toFixed(2));
+  const values = Array.from({length: T + 1}, () => (Math.random() * 3 + 0.5).toFixed(2));
+  const dones = Array(T).fill(0); dones[T-1] = 1;
+
+  const deltas = rewards.map((r, t) => (parseFloat(r) + gamma * parseFloat(values[t+1]) * (1 - dones[t]) - parseFloat(values[t])).toFixed(3));
+  const advs = Array(T).fill(0);
+  let gae = 0;
+  for (let t = T - 1; t >= 0; t--) {
+    gae = parseFloat(deltas[t]) + gamma * lam * (1 - dones[t]) * gae;
+    advs[t] = gae.toFixed(3);
+  }
+
+  const tl = document.getElementById('gae-timeline');
+  tl.innerHTML = '';
+  for (let t = 0; t < T; t++) {
+    const card = document.createElement('div');
+    card.className = 'timeline-step';
+    card.innerHTML = `
+      <div class="t-label">t=${t}</div>
+      <div class="t-val" style="color:var(--accent2)">r=${rewards[t]}</div>
+      <div style="font-size:.65rem;color:var(--muted)">δ=${deltas[t]}</div>
+      <div class="t-adv">Â=${advs[t]}</div>
+    `;
+    tl.appendChild(card);
+    if (t < T - 1) {
+      const arr = document.createElement('div');
+      arr.className = 'arrow';
+      arr.innerHTML = '→';
+      tl.appendChild(arr);
+    }
+  }
+}
+generateGAE();
+function regenerateGAE() { generateGAE(); }
+
+// ── TRAINING CURVE ──
+const trainCanvas = document.getElementById('train-canvas');
+const trainCtx = trainCanvas.getContext('2d');
+let trainData = [], trainRunning = false, trainInterval = null;
+let ep = 0;
+
+function resizeTrainCanvas() {
+  trainCanvas.width = trainCanvas.offsetWidth * window.devicePixelRatio;
+  trainCanvas.height = trainCanvas.offsetHeight * window.devicePixelRatio;
+  trainCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  drawTrainChart();
+}
+
+function drawTrainChart() {
+  const W = trainCanvas.offsetWidth, H = trainCanvas.offsetHeight;
+  trainCtx.clearRect(0, 0, W, H);
+  trainCtx.fillStyle = '#0d0d1a';
+  trainCtx.fillRect(0, 0, W, H);
+
+  if (trainData.length < 2) {
+    trainCtx.fillStyle = '#505070';
+    trainCtx.font = '13px IBM Plex Mono, monospace';
+    trainCtx.textAlign = 'center';
+    trainCtx.fillText('Press ▶ Start Training to simulate a PPO run', W/2, H/2);
+    return;
+  }
+
+  const PAD = { l: 48, r: 15, t: 15, b: 30 };
+  const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+  const minY = Math.min(...trainData) - 5;
+  const maxY = Math.max(...trainData) + 5;
+  const toX = i => PAD.l + (i / (trainData.length - 1)) * cW;
+  const toY = v => PAD.t + (1 - (v - minY) / (maxY - minY)) * cH;
+
+  // Grid
+  trainCtx.strokeStyle = '#1e1e2e'; trainCtx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.t + (i / 4) * cH;
+    trainCtx.beginPath(); trainCtx.moveTo(PAD.l, y); trainCtx.lineTo(PAD.l + cW, y); trainCtx.stroke();
+  }
+
+  // Smoothed line
+  const smooth = trainData.map((_, i) => {
+    const w = 5, s = Math.max(0, i - w), e = Math.min(trainData.length - 1, i + w);
+    return trainData.slice(s, e + 1).reduce((a, b) => a + b, 0) / (e - s + 1);
+  });
+
+  // Area fill under curve
+  const grad = trainCtx.createLinearGradient(0, PAD.t, 0, PAD.t + cH);
+  grad.addColorStop(0, 'rgba(106,247,200,0.18)');
+  grad.addColorStop(1, 'rgba(106,247,200,0.00)');
+  trainCtx.fillStyle = grad;
+  trainCtx.beginPath();
+  trainCtx.moveTo(toX(0), toY(smooth[0]));
+  smooth.forEach((v, i) => trainCtx.lineTo(toX(i), toY(v)));
+  trainCtx.lineTo(toX(smooth.length - 1), PAD.t + cH);
+  trainCtx.lineTo(PAD.l, PAD.t + cH);
+  trainCtx.closePath();
+  trainCtx.fill();
+
+  // Raw data (faint)
+  trainCtx.strokeStyle = 'rgba(106,247,200,0.2)'; trainCtx.lineWidth = 1;
+  trainCtx.beginPath();
+  trainData.forEach((v, i) => i === 0 ? trainCtx.moveTo(toX(i), toY(v)) : trainCtx.lineTo(toX(i), toY(v)));
+  trainCtx.stroke();
+
+  // Smoothed line
+  trainCtx.strokeStyle = '#6af7c8'; trainCtx.lineWidth = 2.5;
+  trainCtx.beginPath();
+  smooth.forEach((v, i) => i === 0 ? trainCtx.moveTo(toX(i), toY(v)) : trainCtx.lineTo(toX(i), toY(v)));
+  trainCtx.stroke();
+
+  // Axes
+  trainCtx.strokeStyle = '#2a2a3a'; trainCtx.lineWidth = 1;
+  trainCtx.beginPath(); trainCtx.moveTo(PAD.l, PAD.t); trainCtx.lineTo(PAD.l, PAD.t + cH); trainCtx.stroke();
+  trainCtx.beginPath(); trainCtx.moveTo(PAD.l, PAD.t + cH); trainCtx.lineTo(PAD.l + cW, PAD.t + cH); trainCtx.stroke();
+
+  // Y-axis labels
+  trainCtx.fillStyle = '#505070'; trainCtx.font = '10px IBM Plex Mono, monospace'; trainCtx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const v = minY + (i / 4) * (maxY - minY);
+    trainCtx.fillText(v.toFixed(0), PAD.l - 5, PAD.t + (1 - i / 4) * cH + 4);
+  }
+  trainCtx.textAlign = 'center';
+  trainCtx.fillText('Episode', PAD.l + cW / 2, H - 4);
+
+  // Current value dot
+  const last = smooth[smooth.length - 1];
+  trainCtx.fillStyle = '#6af7c8';
+  trainCtx.beginPath();
+  trainCtx.arc(toX(smooth.length - 1), toY(last), 4, 0, Math.PI * 2);
+  trainCtx.fill();
+}
+
+// PPO-like learning curve simulation
+function nextReturn(ep) {
+  // Simulates typical PPO learning: slow start, rapid improvement, plateau with noise
+  const base = -50 + Math.min(ep * 0.6, 200) * (1 - Math.exp(-ep / 80));
+  const noise = (Math.random() - 0.5) * 30 * Math.exp(-ep / 300 + 0.1);
+  const collapse = Math.random() < 0.015 ? -20 : 0; // occasional policy collapse
+  return Math.max(-60, base + noise + collapse);
+}
+
+function toggleTraining() {
+  const btn = document.getElementById('train-btn');
+  if (trainRunning) {
+    clearInterval(trainInterval);
+    trainRunning = false;
+    btn.textContent = '▶ Resume Training';
+    btn.classList.remove('run');
+  } else {
+    trainRunning = true;
+    btn.textContent = '⏸ Pause';
+    btn.classList.add('run');
+    trainInterval = setInterval(() => {
+      ep++;
+      trainData.push(nextReturn(ep));
+      document.getElementById('ep-count').textContent = ep;
+      const recent = trainData.slice(-20);
+      const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+      document.getElementById('avg-return').textContent = avg.toFixed(1);
+      drawTrainChart();
+      if (ep >= 500) {
+        clearInterval(trainInterval);
+        trainRunning = false;
+        btn.textContent = '✓ Training Complete';
+        btn.classList.remove('run');
+      }
+    }, 40);
+  }
+}
+
+function resetTraining() {
+  clearInterval(trainInterval);
+  trainRunning = false;
+  trainData = []; ep = 0;
+  document.getElementById('ep-count').textContent = '0';
+  document.getElementById('avg-return').textContent = '—';
+  const btn = document.getElementById('train-btn');
+  btn.textContent = '▶ Start Training';
+  btn.classList.add('run');
+  resizeTrainCanvas();
+}
+
+window.addEventListener('resize', resizeTrainCanvas);
+resizeTrainCanvas();
+</script>
+</body>
+</html>
