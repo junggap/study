@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한국사·중국사·일본사를 함께 보는 비교 연표·관계 이벤트</title>
+  <style>
+    :root {
+      --text: #111;
+      --muted: #555;
+      --line: #d8d8d8;
+      --soft: #f7f7f7;
+      --soft2: #eeeeee;
+      --accent: #111;
+      --war: #7a1f1f;
+      --diplomacy: #1f4d7a;
+      --culture: #4b6b2a;
+      --trade: #6f4b1f;
+      --modern: #4b3f72;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: white;
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 44px 28px 30px;
+      border-bottom: 1px solid var(--line);
+      background: white;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 54px);
+      line-height: 1.12;
+      margin: 0 0 18px;
+      letter-spacing: -0.04em;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin: 0 0 18px;
+      letter-spacing: -0.03em;
+    }
+
+    h3 {
+      font-size: 19px;
+      margin: 0 0 8px;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #333;
+      max-width: 900px;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    main {
+      padding: 28px;
+    }
+
+    section {
+      max-width: 1180px;
+      margin: 0 auto 42px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--soft);
+      font-weight: 700;
+    }
+
+    .toc small {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    button.filter {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    button.filter.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr 1fr 1.25fr;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .timeline > div {
+      padding: 14px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-height: 72px;
+    }
+
+    .timeline > div:nth-child(5n) {
+      border-right: none;
+    }
+
+    .timeline .head {
+      background: #f0f0f0;
+      font-weight: 800;
+      min-height: auto;
+    }
+
+    .period {
+      font-weight: 800;
+      background: #fafafa;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 3px 4px 3px 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--line);
+      color: #222;
+      background: white;
+    }
+
+    .tag.war { border-color: #c9a6a6; color: var(--war); }
+    .tag.diplomacy { border-color: #9eb5cf; color: var(--diplomacy); }
+    .tag.culture { border-color: #adbf98; color: var(--culture); }
+    .tag.trade { border-color: #c7b18f; color: var(--trade); }
+    .tag.modern { border-color: #b4adc9; color: var(--modern); }
+
+    .layout-two {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 22px;
+    }
+
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .event-card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 42px 16px 16px;
+      background: #fff;
+    }
+
+    .relation-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .relation-badge.china {
+      border-color: #c9a6a6;
+      color: #7a1f1f;
+      background: #fffafa;
+    }
+
+    .relation-badge.japan {
+      border-color: #c9c9c9;
+      color: #333;
+      background: #fafafa;
+    }
+
+    .relation-badge.both {
+      border-color: #aaa;
+      color: #111;
+      background: #f5f5f5;
+    }
+
+    .relation-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      background: currentColor;
+    }
+
+
+    .event-card[data-type~="전쟁"] { border-top: 4px solid var(--war); }
+    .event-card[data-type~="외교"] { border-top: 4px solid var(--diplomacy); }
+    .event-card[data-type~="문화"] { border-top: 4px solid var(--culture); }
+    .event-card[data-type~="무역"] { border-top: 4px solid var(--trade); }
+    .event-card[data-type~="현대"] { border-top: 4px solid var(--modern); }
+
+    .event-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .map-panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .map-title {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f6f6f6;
+      font-weight: 800;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: white;
+    }
+
+    .land {
+      fill: #f5f5f5;
+      stroke: #cfcfcf;
+      stroke-width: 1.1;
+    }
+
+    .sea {
+      fill: #fff;
+    }
+
+    .route {
+      fill: none;
+      stroke: #333;
+      stroke-width: 2.2;
+      stroke-dasharray: 6 5;
+      opacity: 0.78;
+    }
+
+    .route.war { stroke: var(--war); }
+    .route.diplomacy { stroke: var(--diplomacy); }
+    .route.culture { stroke: var(--culture); }
+    .route.modern { stroke: var(--modern); }
+
+    .city {
+      cursor: pointer;
+    }
+
+    .city circle {
+      fill: #111;
+      stroke: white;
+      stroke-width: 2;
+    }
+
+    .city text {
+      font-size: 12px;
+      fill: #111;
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    .city:hover circle {
+      r: 6;
+    }
+
+    .info-card {
+      border-top: 1px solid var(--line);
+      padding: 16px;
+      min-height: 118px;
+      background: white;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .matrix th,
+    .matrix td {
+      border: 1px solid var(--line);
+      padding: 11px;
+      vertical-align: top;
+    }
+
+    .matrix th {
+      background: #f2f2f2;
+      text-align: left;
+    }
+
+
+    .theme-essays {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .theme-essay {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .theme-essay h3 {
+      font-size: 22px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+
+    .theme-essay p {
+      margin: 0 0 10px;
+    }
+
+    .print-notice {
+      border: 1px dashed #999;
+      background: #fafafa;
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: #333;
+      margin-top: 16px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 0;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #111;
+      display: inline-block;
+    }
+
+    .dot.war { background: var(--war); }
+    .dot.diplomacy { background: var(--diplomacy); }
+    .dot.culture { background: var(--culture); }
+    .dot.trade { background: var(--trade); }
+    .dot.modern { background: var(--modern); }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 28px 40px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .toc,
+      .event-grid,
+      .layout-two,
+      .theme-essays {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline > div {
+        border-right: none !important;
+      }
+
+      .timeline .head {
+        display: none;
+      }
+
+      .period {
+        font-size: 18px;
+      }
+
+      section {
+        padding: 18px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 12px;
+      }
+
+      header,
+      main,
+      footer {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      section {
+        page-break-inside: avoid;
+        border: 1px solid #bbb;
+        border-radius: 0;
+        margin-bottom: 18px;
+      }
+
+      .controls,
+      .toc,
+      button,
+  
+    .theme-essays {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+
+    .theme-essay {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .theme-essay h3 {
+      font-size: 22px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+
+    .theme-essay p {
+      margin: 0 0 10px;
+    }
+
+    .print-notice {
+        display: none !important;
+      }
+
+      .event-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .relation-badge {
+        top: 8px;
+        right: 8px;
+        font-size: 10px;
+      }
+
+      .layout-two,
+      .theme-essays {
+        grid-template-columns: 1fr;
+      }
+
+      a {
+        color: black;
+        text-decoration: none;
+      }
+
+      .timeline {
+        font-size: 11px;
+      }
+
+      .timeline > div {
+        padding: 8px;
+      }
+
+      @page {
+        margin: 14mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>한국사·중국사·일본사를 함께 보는<br />비교 연표 · 관계 이벤트</h1>
+      <p class="lead">
+        한국·중국·일본의 역사를 따로 외우는 대신, 같은 시대에 세 지역에서 무슨 일이 일어났고
+        한국이 중국·일본과 각각 어떤 관계를 맺었는지 함께 보는 학습용 자료입니다.
+      </p>
+      <nav class="toc">
+        <a href="#timeline">비교 연표 <small>한국사·중국사·일본사·관계사 비교</small></a>
+        <a href="#events">관계 이벤트 <small>전쟁·외교·문화·무역·현대 필터</small></a>
+        <a href="#themes">주제별 정리 <small>전쟁·외교·문화/제도·무역/이동 해설</small></a>
+      </nav>
+
+      <div class="print-notice">
+        인쇄 팁: 브라우저에서 Ctrl+P 또는 Cmd+P를 누른 뒤, 배경 그래픽을 끄거나 켜도 흰 배경 중심으로 읽을 수 있습니다.
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="timeline">
+      <div class="section-header">
+        <div>
+          <h2>1. 비교 연표</h2>
+          <p class="note">큰 시대 구분은 유지하되, 각 나라의 역사 내용은 가능한 한 연도를 표시해 비교할 수 있게 정리했습니다. 일본-중국 관계는 제외했습니다.</p>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div class="head">큰 시대</div>
+        <div class="head">한국사: 연도 중심 내용</div>
+        <div class="head">중국사: 연도 중심 내용</div>
+        <div class="head">일본사: 연도 중심 내용</div>
+        <div class="head">관계 포인트</div>
+
+        <div class="period">고대 초기<br /><span class="note">기원전~1세기</span></div>
+        <div>
+          <b>기원전 2333년</b> 고조선 건국 전승<br />
+          <b>기원전 194년</b> 위만조선 성립<br />
+          <b>기원전 108년</b> 고조선 멸망, 한사군 설치<br />
+          <b>기원전 1세기~1세기</b> 부여·옥저·동예·삼한 성장
+        </div>
+        <div>
+          <b>기원전 1046년경</b> 주 왕조 성립<br />
+          <b>기원전 770~221년</b> 춘추전국 시대<br />
+          <b>기원전 221년</b> 진의 중국 통일<br />
+          <b>기원전 202년</b> 한 왕조 성립<br />
+          <b>기원전 108년</b> 한 무제의 고조선 공격
+        </div>
+        <div>
+          <b>기원전 14,000년경~기원전 300년경</b> 조몬 문화<br />
+          <b>기원전 300년경~기원후 250년경</b> 야요이 문화<br />
+          <b>1~3세기</b> 왜의 여러 정치 집단 성장
+        </div>
+        <div>
+          <b>기원전 108년</b> 고조선 멸망과 한사군 설치가 한중 접점입니다.<br />
+          한일 관계는 아직 국가 간 외교보다 한반도 남부와 일본 열도 사이의 이동·농경·금속기 전파로 이해하는 것이 좋습니다.
+          <br /><span class="tag war">한중 전쟁</span><span class="tag trade">해양 이동</span>
+        </div>
+
+        <div class="period">삼국과 야마토<br /><span class="note">1~7세기</span></div>
+        <div>
+          <b>기원전 57년</b> 신라 건국 전승<br />
+          <b>기원전 37년</b> 고구려 건국 전승<br />
+          <b>기원전 18년</b> 백제 건국 전승<br />
+          <b>313년</b> 고구려, 낙랑군 축출<br />
+          <b>427년</b> 고구려 평양 천도<br />
+          <b>475년</b> 고구려의 한성 함락, 백제 웅진 천도<br />
+          <b>538년</b> 백제 사비 천도<br />
+          <b>660년</b> 백제 멸망<br />
+          <b>668년</b> 고구려 멸망<br />
+          <b>676년</b> 신라, 당 세력 축출
+        </div>
+        <div>
+          <b>220년</b> 후한 멸망, 삼국 시대 시작<br />
+          <b>265년</b> 서진 성립<br />
+          <b>317~589년</b> 동진·남북조 시대<br />
+          <b>581년</b> 수 성립<br />
+          <b>589년</b> 수의 중국 재통일<br />
+          <b>612년</b> 수 양제의 고구려 원정<br />
+          <b>618년</b> 당 성립<br />
+          <b>645년</b> 당 태종의 고구려 원정
+        </div>
+        <div>
+          <b>3~6세기</b> 야마토 정권 성장<br />
+          <b>538년 또는 552년</b> 백제를 통한 불교 전래 전승<br />
+          <b>593~622년</b> 쇼토쿠 태자 활동 시기<br />
+          <b>645년</b> 다이카 개신<br />
+          <b>672년</b> 진신의 난<br />
+          <b>694년</b> 후지와라쿄 천도
+        </div>
+        <div>
+          <b>612년</b> 고구려-수 전쟁, <b>645년</b> 고구려-당 전쟁은 한중 군사 충돌의 핵심입니다.<br />
+          <b>4~7세기</b> 백제·가야계 인물과 기술, 불교, 문자 문화가 일본 야마토 정권 형성에 영향을 주었습니다.
+          <br /><span class="tag war">한중 전쟁</span><span class="tag culture">한일 문화 전파</span>
+        </div>
+
+        <div class="period">남북국·나라/헤이안<br /><span class="note">7~10세기</span></div>
+        <div>
+          <b>698년</b> 발해 건국<br />
+          <b>8세기</b> 통일신라의 왕권·불교 문화 발달<br />
+          <b>732년</b> 발해의 당 등주 공격<br />
+          <b>751년</b> 불국사·석굴암 창건 시작<br />
+          <b>828년</b> 장보고, 청해진 설치<br />
+          <b>892년</b> 견훤, 후백제 세력 형성<br />
+          <b>901년</b> 궁예, 후고구려 건국
+        </div>
+        <div>
+          <b>618~907년</b> 당 왕조<br />
+          <b>690~705년</b> 측천무후의 무주<br />
+          <b>755~763년</b> 안사의 난<br />
+          <b>875~884년</b> 황소의 난<br />
+          <b>907년</b> 당 멸망, 오대십국 시작
+        </div>
+        <div>
+          <b>710년</b> 나라 천도<br />
+          <b>752년</b> 도다이지 대불 개안<br />
+          <b>794년</b> 헤이안쿄 천도<br />
+          <b>894년</b> 견당사 파견 중지<br />
+          <b>10세기</b> 헤이안 귀족 문화 발달
+        </div>
+        <div>
+          <b>698년 이후</b> 신라·발해·당이 병존했습니다.<br />
+          <b>8~9세기</b> 신라와 일본은 외교·해상 교류를 이어갔지만 긴장도 있었습니다.<br />
+          <b>828년</b> 청해진은 황해·남해 해상 교류를 보여주는 중요한 거점입니다.
+          <br /><span class="tag diplomacy">외교</span><span class="tag trade">해상 교류</span>
+        </div>
+
+        <div class="period">고려와 송·요·금·원<br /><span class="note">918~1392</span></div>
+        <div>
+          <b>918년</b> 고려 건국<br />
+          <b>936년</b> 후삼국 통일<br />
+          <b>993년</b> 거란 1차 침입, 서희 외교<br />
+          <b>1010년</b> 거란 2차 침입<br />
+          <b>1018~1019년</b> 거란 3차 침입과 귀주대첩<br />
+          <b>1107년</b> 윤관의 여진 정벌<br />
+          <b>1231년</b> 몽골 1차 침입<br />
+          <b>1232년</b> 강화도 천도<br />
+          <b>1270년</b> 개경 환도, 삼별초 항쟁 시작<br />
+          <b>1356년</b> 공민왕 반원 개혁<br />
+          <b>1392년</b> 고려 멸망
+        </div>
+        <div>
+          <b>960년</b> 송 건국<br />
+          <b>916년</b> 요 건국<br />
+          <b>1125년</b> 금, 요 멸망<br />
+          <b>1127년</b> 정강의 변, 남송 시작<br />
+          <b>1206년</b> 칭기즈 칸 즉위<br />
+          <b>1271년</b> 원 왕조 성립<br />
+          <b>1279년</b> 원, 남송 멸망<br />
+          <b>1368년</b> 명 건국, 원의 중국 지배 종식
+        </div>
+        <div>
+          <b>794~1185년</b> 헤이안 시대<br />
+          <b>1185년</b> 가마쿠라 막부 성립<br />
+          <b>1274년</b> 몽골·고려 연합군의 일본 원정<br />
+          <b>1281년</b> 2차 일본 원정<br />
+          <b>1336년</b> 무로마치 막부 성립<br />
+          <b>14세기</b> 왜구 활동 확대
+        </div>
+        <div>
+          <b>993~1019년</b> 고려-거란 전쟁은 한중 북방 관계의 핵심입니다.<br />
+          <b>1231~1270년</b> 몽골 침입과 원 간섭기는 고려-원 관계의 전환점입니다.<br />
+          <b>1274년·1281년</b> 일본 원정은 고려가 원의 군사 체제에 동원된 한일 접점입니다.<br />
+          <b>14세기</b> 왜구는 고려 말의 큰 안보 문제였습니다.
+          <br /><span class="tag war">거란</span><span class="tag war">몽골</span><span class="tag war">왜구</span>
+        </div>
+
+        <div class="period">조선 전기·명·무로마치/전국<br /><span class="note">1392~1600</span></div>
+        <div>
+          <b>1392년</b> 조선 건국<br />
+          <b>1394년</b> 한양 천도<br />
+          <b>1419년</b> 대마도 정벌<br />
+          <b>1443년</b> 계해약조<br />
+          <b>1446년</b> 훈민정음 반포<br />
+          <b>1592년</b> 임진왜란 발발<br />
+          <b>1597년</b> 정유재란<br />
+          <b>1598년</b> 임진왜란 종결
+        </div>
+        <div>
+          <b>1368년</b> 명 건국<br />
+          <b>1402~1424년</b> 영락제 재위<br />
+          <b>1405~1433년</b> 정화 원정<br />
+          <b>1449년</b> 토목의 변<br />
+          <b>1592~1598년</b> 명의 조선 파병<br />
+          <b>1616년</b> 누르하치, 후금 건국
+        </div>
+        <div>
+          <b>1336~1573년</b> 무로마치 막부<br />
+          <b>1467~1477년</b> 오닌의 난<br />
+          <b>15~16세기</b> 전국시대 전개<br />
+          <b>1590년</b> 도요토미 히데요시의 일본 통일<br />
+          <b>1592년</b> 일본의 조선 침략<br />
+          <b>1600년</b> 세키가하라 전투
+        </div>
+        <div>
+          <b>1419년</b> 대마도 정벌, <b>1443년</b> 계해약조는 왜구 대응과 제한 무역의 흐름입니다.<br />
+          <b>1592~1598년</b> 임진왜란은 조선·일본·명 세력이 얽힌 국제전입니다.
+          <br /><span class="tag diplomacy">조선-명</span><span class="tag diplomacy">조선-일본</span><span class="tag war">임진왜란</span>
+        </div>
+
+        <div class="period">조선 후기·청·에도<br /><span class="note">1600~1860년대</span></div>
+        <div>
+          <b>1607년</b> 전후 첫 조선통신사 파견<br />
+          <b>1627년</b> 정묘호란<br />
+          <b>1636~1637년</b> 병자호란<br />
+          <b>1712년</b> 백두산정계비 건립<br />
+          <b>18세기</b> 연행사와 북학파 활동<br />
+          <b>1811년</b> 마지막 조선통신사
+        </div>
+        <div>
+          <b>1616년</b> 후금 건국<br />
+          <b>1636년</b> 청 건국 선포<br />
+          <b>1644년</b> 청의 베이징 입성<br />
+          <b>1661~1722년</b> 강희제 재위<br />
+          <b>1735~1796년</b> 건륭제 재위<br />
+          <b>1840~1842년</b> 제1차 아편전쟁
+        </div>
+        <div>
+          <b>1603년</b> 에도 막부 성립<br />
+          <b>1630년대</b> 쇄국 체제 정비<br />
+          <b>1607~1811년</b> 조선통신사 왕래<br />
+          <b>1853년</b> 페리 내항<br />
+          <b>1868년</b> 메이지 유신
+        </div>
+        <div>
+          <b>1627년·1636년</b> 조선은 후금·청과 전쟁을 겪었습니다.<br />
+          <b>1607~1811년</b> 조선통신사는 조선-일본 평화 외교와 문화 교류의 상징입니다.<br />
+          <b>18세기</b> 연행사는 조선 지식인이 청 문물을 관찰한 주요 통로였습니다.
+          <br /><span class="tag war">호란</span><span class="tag diplomacy">연행사</span><span class="tag diplomacy">조선통신사</span>
+        </div>
+
+        <div class="period">근대 전환<br /><span class="note">1860년대~1910</span></div>
+        <div>
+          <b>1876년</b> 강화도조약<br />
+          <b>1882년</b> 임오군란<br />
+          <b>1884년</b> 갑신정변<br />
+          <b>1894년</b> 동학농민운동, 갑오개혁, 청일전쟁 발발<br />
+          <b>1895년</b> 을미사변, 시모노세키 조약<br />
+          <b>1897년</b> 대한제국 수립<br />
+          <b>1905년</b> 을사늑약<br />
+          <b>1910년</b> 한국 병합
+        </div>
+        <div>
+          <b>1851~1864년</b> 태평천국 운동<br />
+          <b>1861~1895년</b> 양무운동<br />
+          <b>1894~1895년</b> 청일전쟁<br />
+          <b>1898년</b> 변법자강 운동<br />
+          <b>1900년</b> 의화단 운동<br />
+          <b>1911년</b> 신해혁명
+        </div>
+        <div>
+          <b>1868년</b> 메이지 유신<br />
+          <b>1871년</b> 폐번치현<br />
+          <b>1876년</b> 강화도조약 체결<br />
+          <b>1894~1895년</b> 청일전쟁<br />
+          <b>1904~1905년</b> 러일전쟁<br />
+          <b>1905년</b> 을사늑약 강요<br />
+          <b>1910년</b> 한국 병합
+        </div>
+        <div>
+          <b>1876년</b> 강화도조약은 조선의 근대 개항과 한일 불평등 관계의 출발점입니다.<br />
+          <b>1894~1895년</b> 청일전쟁은 조선을 둘러싼 청·일 경쟁과 전통 질서 붕괴의 분기점입니다.<br />
+          <b>1905년·1910년</b> 일본은 대한제국의 주권을 단계적으로 박탈했습니다.
+          <br /><span class="tag war">청일전쟁</span><span class="tag modern">개항</span><span class="tag modern">식민지화</span>
+        </div>
+
+        <div class="period">식민지·전쟁의 시대<br /><span class="note">1910~1945</span></div>
+        <div>
+          <b>1910년</b> 일제강점기 시작<br />
+          <b>1919년</b> 3·1운동, 대한민국 임시정부 수립<br />
+          <b>1931년</b> 만주사변 이후 만주 독립운동 환경 변화<br />
+          <b>1932년</b> 윤봉길 의거<br />
+          <b>1940년</b> 한국광복군 창설<br />
+          <b>1945년</b> 광복
+        </div>
+        <div>
+          <b>1912년</b> 중화민국 수립<br />
+          <b>1919년</b> 5·4운동<br />
+          <b>1927~1949년</b> 국공내전<br />
+          <b>1931년</b> 만주사변<br />
+          <b>1937년</b> 중일전쟁 전면화<br />
+          <b>1945년</b> 일본 패전, 전후 질서 재편
+        </div>
+        <div>
+          <b>1910년</b> 한국 병합<br />
+          <b>1912년</b> 다이쇼 시대 시작<br />
+          <b>1931년</b> 만주사변<br />
+          <b>1937년</b> 중일전쟁 전면화<br />
+          <b>1941년</b> 태평양전쟁 시작<br />
+          <b>1945년</b> 일본 패전
+        </div>
+        <div>
+          <b>1919년</b> 상하이 대한민국 임시정부는 한중 항일 연대의 중요한 거점입니다.<br />
+          <b>1910~1945년</b> 한일 관계는 식민지 지배와 저항의 관계였습니다.<br />
+          <b>1930~1940년대</b> 강제동원, 전시 동원, 독립군·광복군 활동이 핵심입니다.
+          <br /><span class="tag modern">독립운동</span><span class="tag modern">식민지 지배</span><span class="tag war">전쟁동원</span>
+        </div>
+
+        <div class="period">현대<br /><span class="note">1945~현재</span></div>
+        <div>
+          <b>1945년</b> 광복과 남북 분단<br />
+          <b>1948년</b> 대한민국 정부 수립<br />
+          <b>1950~1953년</b> 한국전쟁<br />
+          <b>1965년</b> 한일 국교정상화<br />
+          <b>1992년</b> 한중 수교<br />
+          <b>1997년</b> 외환위기<br />
+          <b>2000년대 이후</b> 한류·무역·안보 이슈 확대<br />
+          <b>2016~2017년</b> 사드 갈등
+        </div>
+        <div>
+          <b>1949년</b> 중화인민공화국 수립<br />
+          <b>1950년</b> 중국군 한국전쟁 참전<br />
+          <b>1966~1976년</b> 문화대혁명<br />
+          <b>1978년</b> 개혁개방 시작<br />
+          <b>1992년</b> 한중 수교<br />
+          <b>2001년</b> WTO 가입<br />
+          <b>2010년대 이후</b> 미중 전략 경쟁 심화
+        </div>
+        <div>
+          <b>1945년</b> 일본 패전<br />
+          <b>1947년</b> 일본국 헌법 시행<br />
+          <b>1951년</b> 샌프란시스코 강화조약<br />
+          <b>1965년</b> 한일기본조약<br />
+          <b>1990년대 이후</b> 위안부·강제동원·독도 문제 부각<br />
+          <b>2002년</b> 한일 월드컵 공동 개최<br />
+          <b>2019년</b> 일본 수출규제와 한일 갈등
+        </div>
+        <div>
+          <b>1950년</b> 중국군 참전은 현대 한중 관계의 출발점을 냉전적 적대로 만들었습니다.<br />
+          <b>1965년</b> 한일 국교정상화 이후 경제 협력은 확대되었지만 역사 문제는 계속 남았습니다.<br />
+          <b>1992년</b> 한중 수교 이후 경제·인적 교류가 급증했습니다.<br />
+          <b>2010년대 이후</b> 한중·한일 관계 모두 안보와 역사 인식 문제가 중요해졌습니다.
+          <br /><span class="tag war">한국전쟁</span><span class="tag diplomacy">수교</span><span class="tag modern">현대 갈등</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="events">
+      <div class="section-header">
+        <div>
+          <h2>2. 관계 이벤트</h2>
+          <p class="note">유형 필터는 사건 성격만 고릅니다. 각 카드 오른쪽 위의 관계 배지로 한국-중국 사건인지, 한국-일본 사건인지, 또는 세 나라가 함께 얽힌 사건인지 바로 구분할 수 있습니다.</p>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="관계 유형 필터">
+        <button class="filter active" data-filter="all">전체</button>
+        <button class="filter" data-filter="전쟁">전쟁</button>
+        <button class="filter" data-filter="외교">외교</button>
+        <button class="filter" data-filter="문화">문화·제도</button>
+        <button class="filter" data-filter="무역">무역·이동</button>
+        <button class="filter" data-filter="현대">근현대</button>
+      </div>
+
+      <div class="legend" style="margin-bottom:16px;">
+        <span><i class="dot war"></i>한국↔중국</span>
+        <span><i class="dot"></i>한국↔일본</span>
+        <span><i class="dot modern"></i>한국↔중국·일본</span>
+      </div>
+
+      <div class="event-grid">
+        <article class="event-card" data-type="전쟁 외교">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>고조선 멸망과 한사군</h3>
+          <div class="event-meta">기원전 108년 · 한반도 북부·요동</div>
+          <p>한나라와 고조선의 충돌 이후 한사군이 설치되며, 한반도 북부와 요동은 동아시아 접경 질서의 핵심 공간이 됩니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">접경</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>고구려-수 전쟁</h3>
+          <div class="event-meta">598~614년 · 요동·압록강·살수</div>
+          <p>중국을 통일한 수나라는 고구려를 압박했지만, 고구려의 저항으로 대규모 원정은 실패합니다.</p>
+          <span class="tag war">전쟁</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>신라-당 연합과 나당전쟁</h3>
+          <div class="event-meta">7세기 · 한반도·당</div>
+          <p>신라는 당과 연합해 백제와 고구려를 무너뜨렸지만, 이후 당의 한반도 지배 시도에 맞서 싸웠습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">동맹</span>
+        </article>
+
+        <article class="event-card" data-type="문화 외교 무역">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>신라·발해와 당의 교류</h3>
+          <div class="event-meta">7~10세기 · 경주·상경·장안</div>
+          <p>통일신라와 발해는 당과 외교·문화·교역 관계를 맺으며 동아시아 국제질서 안에서 활동했습니다.</p>
+          <span class="tag culture">문화</span><span class="tag diplomacy">외교</span><span class="tag trade">무역</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>고려와 거란·여진</h3>
+          <div class="event-meta">10~12세기 · 압록강·동북 지역</div>
+          <p>고려는 송·요·금 사이에서 외교 균형을 잡는 한편, 거란과 여진의 압박에 군사적으로 대응했습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">균형외교</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교 문화">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>몽골 침입과 원 간섭기</h3>
+          <div class="event-meta">13~14세기 · 고려·원</div>
+          <p>몽골 침입 이후 고려는 원의 강한 영향 아래 놓였고, 정치·혼인·제도·문화의 복합적 관계가 생겼습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">원 간섭</span>
+        </article>
+
+        <article class="event-card" data-type="외교 문화">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>조선-명 관계</h3>
+          <div class="event-meta">14~17세기 · 한양-베이징/난징</div>
+          <p>조선은 명과 사대 외교를 유지하며 왕권 승인, 사신 왕래, 성리학 질서, 문물 교류를 이어갔습니다.</p>
+          <span class="tag diplomacy">외교</span><span class="tag culture">성리학</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교">
+          <div class="relation-badge both"><span class="relation-dot"></span>한국↔중국·일본</div>
+          
+          <h3>임진왜란과 명군 파병</h3>
+          <div class="event-meta">1592~1598년 · 조선·명·일본</div>
+          <p>일본의 침략에 맞서 조선이 항전했고, 명은 조선에 군대를 파견했습니다. 한중일 관계가 얽힌 국제전입니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">군사동맹</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교 문화">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>병자호란과 조선-청 관계</h3>
+          <div class="event-meta">1636~1637년 이후 · 한양·남한산성·베이징</div>
+          <p>조선은 청에 패배한 뒤 청 중심 질서에 편입되었지만, 이후 연행사를 통해 청 문물을 관찰하고 북학론이 등장했습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag diplomacy">외교</span><span class="tag culture">북학</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교 현대">
+          <div class="relation-badge both"><span class="relation-dot"></span>한국↔중국·일본</div>
+          
+          <h3>청일전쟁과 전통 질서 붕괴</h3>
+          <div class="event-meta">1894~1895년 · 조선·청·일본</div>
+          <p>청일전쟁은 조선을 둘러싼 청과 일본의 경쟁이 폭발한 사건이며, 전근대 동아시아 질서가 무너지는 계기였습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag modern">근대</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대 무역">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>대한민국 임시정부와 중국</h3>
+          <div class="event-meta">1919~1945년 · 상하이·충칭</div>
+          <p>대한민국 임시정부와 여러 독립운동 세력은 중국의 여러 도시를 거점으로 항일 활동을 전개했습니다.</p>
+          <span class="tag modern">독립운동</span><span class="tag diplomacy">항일연대</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 현대">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>한국전쟁과 중국군 참전</h3>
+          <div class="event-meta">1950~1953년 · 한반도·압록강</div>
+          <p>한국전쟁에서 중국군이 참전하면서 한중 관계는 냉전 구조 속에서 장기간 적대 관계가 되었습니다.</p>
+          <span class="tag war">전쟁</span><span class="tag modern">냉전</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대 무역">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>1992년 한중 수교</h3>
+          <div class="event-meta">1992년 이후 · 서울·베이징</div>
+          <p>대한민국과 중화인민공화국이 외교관계를 수립하면서 경제·문화·인적 교류가 급격히 확대되었습니다.</p>
+          <span class="tag diplomacy">외교</span><span class="tag trade">경제</span><span class="tag modern">현대</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대">
+          <div class="relation-badge china"><span class="relation-dot"></span>한국↔중국</div>
+          
+          <h3>사드 갈등과 미중 경쟁</h3>
+          <div class="event-meta">2010년대 이후 · 한반도·동아시아</div>
+          <p>사드 배치, 북한 문제, 미중 전략 경쟁은 현대 한중 관계를 경제 협력과 안보 갈등이 공존하는 구조로 만들었습니다.</p>
+          <span class="tag diplomacy">외교</span><span class="tag modern">안보</span>
+        </article>
+
+        <article class="event-card" data-type="문화 외교 무역 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>백제-야마토 교류와 문화 전파</h3>
+          <div class="event-meta">4~7세기 · 백제·가야·왜/야마토</div>
+          <p>한반도에서 일본 열도로 문자, 불교, 기술, 제도, 장인 집단이 전해졌고, 특히 백제와 야마토 정권의 관계가 중요했습니다.</p>
+          <span class="tag culture">한일 문화</span><span class="tag diplomacy">외교</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 외교 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>왜구와 대마도 문제</h3>
+          <div class="event-meta">고려 말~조선 초 · 남해안·대마도</div>
+          <p>왜구의 침입은 고려 말과 조선 초의 큰 안보 문제였고, 조선은 군사 대응과 외교·무역 통제를 함께 사용했습니다.</p>
+          <span class="tag war">왜구</span><span class="tag diplomacy">대마도</span>
+        </article>
+
+        <article class="event-card" data-type="외교 무역 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>계해약조와 제한 무역</h3>
+          <div class="event-meta">1443년 · 조선·대마도</div>
+          <p>조선은 대마도와의 관계를 관리하며 일본 측 왕래와 무역을 일정하게 통제했습니다. 조선 전기 한일 외교의 중요한 장치입니다.</p>
+          <span class="tag diplomacy">외교</span><span class="tag trade">무역</span>
+        </article>
+
+        <article class="event-card" data-type="전쟁 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>임진왜란</h3>
+          <div class="event-meta">1592~1598년 · 조선 전역</div>
+          <p>도요토미 히데요시 정권의 침략으로 조선 전역이 전쟁터가 되었고, 조선 사회와 동아시아 국제질서에 큰 충격을 남겼습니다.</p>
+          <span class="tag war">한일 전쟁</span>
+        </article>
+
+        <article class="event-card" data-type="외교 문화 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>조선통신사</h3>
+          <div class="event-meta">1607~1811년 · 한양-대마도-에도</div>
+          <p>임진왜란 이후 조선과 도쿠가와 막부는 통신사를 통해 외교를 복원하고 문화 교류를 이어갔습니다.</p>
+          <span class="tag diplomacy">외교</span><span class="tag culture">문화 교류</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>강화도조약과 개항</h3>
+          <div class="event-meta">1876년 · 강화도·조선·일본</div>
+          <p>일본은 무력 시위를 배경으로 조선과 강화도조약을 맺었고, 이는 조선이 일본 주도의 불평등 조약 체제에 들어가는 출발점이 되었습니다.</p>
+          <span class="tag diplomacy">근대 외교</span><span class="tag modern">개항</span>
+        </article>
+
+        <article class="event-card" data-type="현대 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>을사늑약과 1910년 병합</h3>
+          <div class="event-meta">1905~1910년 · 대한제국·일본 제국</div>
+          <p>일본은 대한제국의 외교권과 통치권을 단계적으로 박탈했고, 1910년 병합으로 한국은 식민지 지배를 받게 되었습니다.</p>
+          <span class="tag modern">식민지화</span>
+        </article>
+
+        <article class="event-card" data-type="현대 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>식민지 지배와 강제동원</h3>
+          <div class="event-meta">1910~1945년 · 한반도·일본 제국권</div>
+          <p>일제강점기에는 정치적 억압, 경제 수탈, 문화 말살 정책, 전시 강제동원 문제가 발생했고, 이는 현대 한일 역사 갈등의 핵심 배경입니다.</p>
+          <span class="tag modern">식민지 지배</span><span class="tag war">전쟁동원</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>1965년 한일 국교정상화</h3>
+          <div class="event-meta">1965년 · 서울·도쿄</div>
+          <p>대한민국과 일본은 국교를 정상화하고 경제 협력을 확대했지만, 식민지 지배 배상과 역사 인식 문제는 이후에도 계속 논쟁이 되었습니다.</p>
+          <span class="tag diplomacy">국교정상화</span><span class="tag modern">현대</span>
+        </article>
+
+        <article class="event-card" data-type="외교 현대 한일">
+          <div class="relation-badge japan"><span class="relation-dot"></span>한국↔일본</div>
+          
+          <h3>현대 역사 쟁점</h3>
+          <div class="event-meta">1990년대 이후 · 한국·일본</div>
+          <p>독도, 일본군 위안부, 강제동원 판결, 역사교과서, 야스쿠니 문제 등이 한일 관계의 반복적 갈등 요인으로 남아 있습니다.</p>
+          <span class="tag modern">역사 갈등</span><span class="tag diplomacy">외교</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="themes">
+      <div class="section-header">
+        <div>
+          <h2>3. 주제별 정리</h2>
+          <p class="note">전쟁, 외교, 문화/제도, 무역/이동이라는 네 가지 관점에서 한국-중국 관계와 한국-일본 관계를 함께 정리했습니다.</p>
+        </div>
+      </div>
+
+      <div class="theme-essays">
+        <article class="theme-essay">
+          <h3>전쟁</h3>
+          <p>한국과 중국의 전쟁 관계는 주로 한반도 북부, 만주, 요동, 압록강 주변에서 반복적으로 나타났습니다.</p>
+          <p>기원전 108년 한나라의 고조선 공격은 한중 접경 관계가 본격적으로 역사 기록에 등장하는 중요한 사건입니다.</p>
+          <p>삼국 시대에는 고구려가 수나라와 당나라의 대규모 원정을 막아내며 동아시아 군사 질서에서 중요한 위치를 차지했습니다.</p>
+          <p>신라는 당과 연합해 백제와 고구려를 멸망시켰지만, 이후 당의 한반도 지배 시도에 맞서 나당전쟁을 벌였습니다.</p>
+          <p>고려 시대에는 거란, 여진, 몽골과의 전쟁이 이어졌고, 이 과정에서 고려는 북방 왕조들과 군사적·외교적으로 맞섰습니다.</p>
+          <p>조선 시대에는 정묘호란과 병자호란을 통해 명청 교체기의 충격이 한반도에 직접 전달되었습니다.</p>
+          <p>한국과 일본의 전쟁 관계는 왜구 문제, 임진왜란, 식민지 지배와 전쟁 동원 문제를 중심으로 볼 수 있습니다.</p>
+          <p>임진왜란은 조선과 일본의 전쟁이면서 동시에 명나라가 참전한 국제전이었고, 조선 사회에 큰 피해와 변화를 남겼습니다.</p>
+          <p>근대 이후 일본의 군사적 압박은 강화도조약, 을사늑약, 1910년 병합으로 이어지며 한국의 주권 상실로 귀결되었습니다.</p>
+          <p>현대에는 한국전쟁에서 중국군 참전이 한중 관계를 냉전적 적대 관계로 만들었고, 한일 관계에서는 식민지와 전쟁 책임 문제가 계속 역사 갈등의 핵심으로 남아 있습니다.</p>
+        </article>
+
+        <article class="theme-essay">
+          <h3>외교</h3>
+          <p>한국과 중국의 외교 관계는 전근대 동아시아 국제질서 속에서 조공·책봉, 사신 왕래, 군사 동맹, 현실적 균형 외교가 섞여 전개되었습니다.</p>
+          <p>삼국은 중국의 여러 왕조와 외교 관계를 맺어 군사적 압박을 견제하거나 국제적 위신을 확보하려 했습니다.</p>
+          <p>신라와 당의 동맹은 백제와 고구려를 무너뜨리는 데 결정적이었지만, 동맹은 곧 한반도 지배권을 둘러싼 갈등으로 바뀌었습니다.</p>
+          <p>고려는 송, 요, 금, 원이 병존하는 복잡한 질서 속에서 어느 한쪽에만 의존하지 않는 균형 외교를 추구했습니다.</p>
+          <p>조선은 명과의 관계에서 사대 외교를 제도화했지만, 이것은 단순 복속이 아니라 왕권 승인, 안보, 무역, 문화 질서를 관리하는 외교 방식이기도 했습니다.</p>
+          <p>명청 교체 이후 조선은 청에 대한 감정적 거부감과 현실적 외교 필요 사이에서 긴장을 겪었습니다.</p>
+          <p>한국과 일본의 외교 관계는 왜구 대응과 대마도 문제를 관리하는 방식으로 시작해, 계해약조와 조선통신사로 제도화되었습니다.</p>
+          <p>조선통신사는 임진왜란 이후 조선과 에도 막부가 관계를 회복하고 평화적 질서를 유지하려 했던 대표적 외교 장치입니다.</p>
+          <p>근대의 한일 외교는 일본의 군사력과 제국주의 팽창 속에서 불평등하게 전개되었고, 강화도조약과 을사늑약은 그 대표적 사례입니다.</p>
+          <p>현대에는 1965년 한일 국교정상화와 1992년 한중 수교가 각각 새로운 관계의 출발점이 되었지만, 안보·역사·경제 문제가 외교 갈등을 계속 만들어내고 있습니다.</p>
+        </article>
+
+        <article class="theme-essay">
+          <h3>문화/제도</h3>
+          <p>한국은 중국과의 관계 속에서 한자, 유교, 불교, 율령, 과거제, 성리학 같은 여러 문화와 제도를 받아들이고 변형했습니다.</p>
+          <p>이 수용은 단순한 모방이 아니라 각 시대 한국 사회의 필요에 맞게 재구성되는 과정이었습니다.</p>
+          <p>삼국 시대에는 불교와 문자 문화가 국가 체제 정비와 왕권 강화에 중요한 역할을 했습니다.</p>
+          <p>통일신라와 발해는 당의 제도와 문화를 참고하면서도 각자의 정치적 정체성과 지역적 특징을 유지했습니다.</p>
+          <p>고려는 송과의 교류를 통해 불교, 인쇄술, 문물, 학문을 발전시켰고, 원 간섭기에는 몽골·원 문화의 영향도 받았습니다.</p>
+          <p>조선은 성리학을 국가 운영 원리로 삼아 교육, 관료제, 의례, 가족 질서, 정치 이념을 재편했습니다.</p>
+          <p>한국과 일본의 문화 관계에서는 한반도에서 일본 열도로 전해진 문자, 불교, 건축, 공예, 제도, 기술이 매우 중요합니다.</p>
+          <p>특히 백제와 야마토의 관계는 일본 고대 국가 형성 과정에서 한반도 문화가 어떤 역할을 했는지 보여주는 대표 사례입니다.</p>
+          <p>조선 후기 조선통신사는 외교 사절이면서 동시에 학문, 서예, 문학, 의례, 예술이 오간 문화 교류의 통로였습니다.</p>
+          <p>현대에는 한류, 대중문화, 학술 교류, 역사교과서 논쟁처럼 문화 교류와 역사 인식 갈등이 동시에 나타나고 있습니다.</p>
+        </article>
+
+        <article class="theme-essay">
+          <h3>무역/이동</h3>
+          <p>한국과 중국, 한국과 일본의 관계는 전쟁과 외교뿐 아니라 사람과 물자의 이동을 통해서도 계속 이어졌습니다.</p>
+          <p>황해는 한반도와 중국 동부를 잇는 중요한 바닷길이었고, 산둥반도와 한반도 서해안은 교류의 주요 접점이었습니다.</p>
+          <p>신라의 장보고와 청해진은 동아시아 해상 교역망 속에서 한반도가 어떤 역할을 했는지 보여주는 상징적 사례입니다.</p>
+          <p>고려는 송과의 무역과 사신 왕래를 통해 책, 도자기, 약재, 공예품, 사상, 기술을 받아들이고 교환했습니다.</p>
+          <p>조선 시대에는 한양에서 의주를 거쳐 베이징으로 향하는 사신 길이 외교뿐 아니라 정보와 문물 이동의 통로였습니다.</p>
+          <p>연행사는 조선 지식인들이 청의 도시, 상업, 기술, 서적, 학문을 관찰하는 중요한 이동 경험이었습니다.</p>
+          <p>한국과 일본 사이에서는 한반도 남부, 대마도, 규슈를 잇는 해상 이동이 고대부터 중요한 역할을 했습니다.</p>
+          <p>왜구 문제는 통제되지 않은 해상 이동이 안보 위협이 될 수 있음을 보여주었고, 조선은 이를 군사 대응과 무역 통제로 관리하려 했습니다.</p>
+          <p>조선통신사의 이동 경로는 한양에서 대마도, 오사카, 에도까지 이어지는 외교·문화 이동의 대표적 사례입니다.</p>
+          <p>현대에는 항공, 해운, 유학, 관광, 기업 활동, 이주 노동, 문화 콘텐츠 유통이 한국-중국·한국-일본 관계의 일상적 기반이 되었습니다.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+<script>
+    const buttons = document.querySelectorAll("button.filter");
+    const cards = document.querySelectorAll(".event-card");
+
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        buttons.forEach(b => b.classList.remove("active"));
+        button.classList.add("active");
+
+        cards.forEach(card => {
+          if (filter === "all" || card.dataset.type.includes(filter)) {
+            card.classList.remove("hidden");
+          } else {
+            card.classList.add("hidden");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
