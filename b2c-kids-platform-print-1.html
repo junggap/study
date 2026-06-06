@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>질문 학습 플랫폼 — B2C 기획서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f2eb;
+    --accent: #2e7d5e;
+    --accent2: #c8401a;
+    --accent3: #2a5c8f;
+    --muted: #7a7570;
+    --rule: #d4cfc5;
+    --code-bg: #1a1917;
+    --code-text: #e8e4da;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  /* COVER */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 10vw;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -150px; right: -150px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(46,125,94,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: 5vw;
+    width: 350px; height: 350px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(42,92,143,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cover-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 40px;
+  }
+
+  .cover h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 900;
+    font-size: clamp(36px, 6vw, 76px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+  }
+
+  .cover h1 span { color: var(--accent); }
+
+  .cover-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.8;
+    margin-bottom: 60px;
+  }
+
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 32px;
+  }
+
+  .cover-meta span strong {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  /* TOC */
+  .toc {
+    padding: 40px 10vw;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .toc-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .toc-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px 32px;
+    list-style: none;
+  }
+
+  .toc-list a {
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 14px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .toc-list a:hover { color: var(--accent); border-color: var(--accent); }
+
+  .toc-list .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    min-width: 20px;
+  }
+
+  /* SECTIONS */
+  .section {
+    padding: 60px 10vw;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .section-title-block h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: clamp(20px, 2.5vw, 28px);
+    line-height: 1.2;
+    margin-bottom: 0;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .section-body { margin-left: 0; }
+
+  @media (max-width: 768px) {
+    .section-header { flex-wrap: wrap; }
+    .section-desc { margin-left: 0; }
+    .toc { grid-template-columns: 1fr; }
+    .cover { padding: 60px 6vw; }
+    .section { padding: 60px 6vw; }
+  }
+
+  /* ============ PRINT STYLES ============ */
+  @media print {
+    @page {
+      size: A4;
+      margin: 18mm 18mm 20mm 18mm;
+    }
+
+    * { -webkit-print-color-adjust: economy; print-color-adjust: economy; }
+
+    html { scroll-behavior: auto; }
+
+    body {
+      background: #fff;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* Cover: compact for print */
+    .cover {
+      min-height: auto;
+      padding: 40px 0 32px;
+      border-bottom: 2px solid var(--ink);
+      page-break-after: always;
+    }
+    .cover::before, .cover::after { display: none; }
+    .cover h1 { font-size: 42px; margin-bottom: 18px; }
+    .cover-sub { font-size: 13px; margin-bottom: 28px; }
+    .cover-meta { padding-top: 18px; gap: 24px; }
+
+    /* TOC */
+    .toc {
+      padding: 28px 0;
+      display: block;
+      page-break-after: always;
+    }
+    .toc-label { font-size: 10px; margin-bottom: 14px; display: block; }
+    .toc-list { grid-template-columns: repeat(3, 1fr); gap: 4px 24px; }
+    .toc-list a { font-size: 12px; padding: 4px 0; }
+    .toc-list a:hover { color: inherit; border-color: transparent; }
+
+    /* Sections */
+    .section {
+      padding: 28px 0;
+      border-bottom: 1px solid var(--rule);
+      page-break-inside: avoid;
+    }
+
+    .section-header {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+    }
+
+    .section-title-block h2 { font-size: 18px; }
+
+    p { font-size: 12px; margin-bottom: 12px; }
+    h3 { font-size: 14px; margin: 24px 0 10px; }
+    h4 { font-size: 12px; margin: 16px 0 8px; }
+
+    /* No page-break inside key content blocks */
+    table, .highlight, .code-block,
+    .persona-card, .pricing-card, .roadmap-phase,
+    .col-card, .age-card, .garden-stage { page-break-inside: avoid; }
+
+    /* Allow grids to wrap for print width */
+    .persona-grid { grid-template-columns: repeat(3, 1fr); }
+    .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+    .roadmap { grid-template-columns: repeat(3, 1fr); }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .age-compare { grid-template-columns: 1fr 1fr; }
+    .garden-stages { grid-template-columns: repeat(4, 1fr); }
+
+    /* Tables */
+    table { font-size: 11px; }
+    th { font-size: 9px; padding: 7px 10px; }
+    td { padding: 8px 10px; }
+
+    /* Code blocks */
+    .code-block {
+      font-size: 10px;
+      padding: 16px 20px;
+      border-radius: 4px;
+      page-break-inside: avoid;
+    }
+
+    /* Tags */
+    .tag { font-size: 9px; padding: 2px 6px; }
+
+    /* ---- 검정 배경 → 테두리만 ---- */
+
+    /* 코드 블록 */
+    .code-block {
+      background: #fff !important;
+      color: #1a1917 !important;
+      border: 1.5px solid #aaa !important;
+      border-radius: 4px;
+    }
+    .code-block .code-label { color: #555 !important; }
+    .accent-line { color: var(--accent) !important; }
+    .orange-line { color: var(--accent2) !important; }
+    .blue-line  { color: var(--accent3) !important; }
+    .muted-line { color: #888 !important; }
+    .white-line { color: #222 !important; }
+
+    /* 가격표 추천(featured) 카드 */
+    .pricing-card.featured {
+      background: #fff !important;
+      color: var(--ink) !important;
+      border: 2px solid var(--ink) !important;
+    }
+    .pricing-card.featured .pricing-tier { color: var(--muted) !important; }
+    .pricing-card.featured .pricing-price span { color: var(--muted) !important; }
+    .pricing-card.featured .pricing-features { border-top-color: var(--rule) !important; }
+    .pricing-card.featured .pricing-features li { color: var(--muted) !important; }
+    .pricing-card.featured .pricing-features li::before { color: var(--accent) !important; }
+
+    /* 지식 정원 헤더 */
+    .garden-header {
+      background: #fff !important;
+      border-bottom: 1.5px solid var(--ink) !important;
+    }
+    .garden-header .gh-title { color: #555 !important; }
+
+    /* Footer */
+    footer {
+      padding: 16px 0;
+      border-top: 2px solid var(--ink);
+      margin-top: 16px;
+    }
+
+    /* Hide interactive/decorative elements */
+    .cover::before, .cover::after,
+    .garden-header .gh-dots { display: none; }
+
+    /* Q-evolution table print */
+    .q-row { grid-template-columns: 100px 1fr 80px; }
+    .q-time, .q-text { font-size: 11px; padding: 10px 12px; }
+
+    /* Flow steps */
+    .flow-desc { font-size: 11px; }
+    .flow-title { font-size: 12px; }
+  }
+
+  /* PROSE */
+  p {
+    font-size: 15px;
+    line-height: 1.9;
+    margin-bottom: 20px;
+    color: #2a2825;
+  }
+
+  p strong { font-weight: 500; color: var(--ink); }
+
+  h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin: 24px 0 10px;
+    color: var(--ink);
+  }
+
+  /* HIGHLIGHT */
+  .highlight {
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    background: rgba(46,125,94,0.05);
+    margin: 28px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .highlight p { margin: 0; }
+
+  .highlight-orange {
+    border-left-color: var(--accent2);
+    background: rgba(200,64,26,0.05);
+  }
+
+  .highlight-blue {
+    border-left-color: var(--accent3);
+    background: rgba(42,92,143,0.05);
+  }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+
+  th {
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin: 2px;
+  }
+
+  .tag-green { background: rgba(46,125,94,0.1); color: var(--accent); }
+  .tag-orange { background: rgba(200,64,26,0.1); color: var(--accent2); }
+  .tag-blue { background: rgba(42,92,143,0.1); color: var(--accent3); }
+  .tag-gray { background: rgba(122,117,112,0.12); color: var(--muted); }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #f8f6f0;
+    color: #1a1917;
+    border: 1.5px solid #bbb;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    padding: 28px 32px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .code-block .code-label {
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: #5a5650;
+    text-transform: uppercase;
+  }
+
+  .accent-line { color: #2e7d5e; }
+  .orange-line { color: #c8401a; }
+  .blue-line { color: #2a5c8f; }
+  .muted-line { color: #888; }
+  .white-line { color: #222; }
+
+  /* FLOW */
+  .flow { display: flex; flex-direction: column; margin: 24px 0; }
+
+  .flow-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .flow-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .flow-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .flow-line {
+    width: 2px;
+    flex: 1;
+    background: var(--rule);
+    min-height: 16px;
+  }
+
+  .flow-content {
+    padding: 2px 0 24px 0;
+  }
+
+  .flow-title {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .flow-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* TWO COLUMN */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 24px;
+  }
+
+  .col-card .col-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .col-card .col-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  .col-card ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .col-card li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+
+  .col-card li:last-child { border-bottom: none; }
+
+  .col-card li::before {
+    content: '→ ';
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+  }
+
+  /* GARDEN VISUAL */
+  .garden-visual {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 28px 0;
+  }
+
+  .garden-header {
+    background: #fff;
+    border-bottom: 1.5px solid var(--ink);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .garden-header .gh-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #555;
+    text-transform: uppercase;
+  }
+
+  .garden-header .gh-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .garden-header .gh-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #ccc;
+  }
+
+  .garden-stages {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--rule);
+  }
+
+  .garden-stage {
+    background: var(--paper);
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .garden-stage .stage-icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .garden-stage .stage-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .garden-stage .stage-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .garden-stages { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* QUESTION EVOLUTION */
+  .q-evolution {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 28px 0;
+  }
+
+  .q-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 100px;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .q-row:last-child { border-bottom: none; }
+
+  .q-time {
+    padding: 16px;
+    background: rgba(0,0,0,0.02);
+    border-right: 1px solid var(--rule);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+  }
+
+  .q-text {
+    padding: 16px 20px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    line-height: 1.5;
+  }
+
+  .q-level {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-left: 1px solid var(--rule);
+  }
+
+  /* PERSONA CARDS */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 700px) {
+    .persona-grid { grid-template-columns: 1fr; }
+  }
+
+  .persona-card {
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .persona-top {
+    padding: 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .persona-emoji {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .persona-name {
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .persona-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .persona-body {
+    padding: 16px 20px;
+  }
+
+  .persona-body p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 600px) {
+    .pricing-grid { grid-template-columns: 1fr; }
+  }
+
+  .pricing-card {
+    background: var(--paper);
+    padding: 28px 22px;
+  }
+
+  .pricing-card.featured {
+    background: #fff;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+  }
+
+  .pricing-tier {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .pricing-card.featured .pricing-tier { color: #7a7570; }
+
+  .pricing-price {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .pricing-price span {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .pricing-card.featured .pricing-price span { color: #7a7570; }
+
+  .pricing-features {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    list-style: none;
+  }
+
+  .pricing-card.featured .pricing-features { border-top-color: var(--rule); }
+
+  .pricing-features li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 4px 0;
+    line-height: 1.5;
+  }
+
+  .pricing-features li::before {
+    content: '→ ';
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+  }
+
+  .pricing-card.featured .pricing-features li { color: var(--muted); }
+  .pricing-card.featured .pricing-features li::before { color: var(--accent); }
+
+  /* ROADMAP */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 600px) { .roadmap { grid-template-columns: 1fr; } }
+
+  .roadmap-phase {
+    background: var(--paper);
+    padding: 26px 22px;
+  }
+
+  .phase-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .phase-title {
+    font-family: 'Noto Serif KR', serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .roadmap-phase ul { list-style: none; padding: 0; }
+
+  .roadmap-phase li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 5px 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+
+  .roadmap-phase li:last-child { border-bottom: none; }
+  .roadmap-phase li::before { content: '→ '; color: var(--accent); font-family: 'DM Mono', monospace; }
+
+  /* AGE COMPARE */
+  .age-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  @media (max-width: 600px) { .age-compare { grid-template-columns: 1fr; } }
+
+  .age-card {
+    border-radius: 6px;
+    padding: 24px;
+    border: 1px solid var(--rule);
+  }
+
+  .age-card.elementary { border-top: 3px solid var(--accent); }
+  .age-card.middle { border-top: 3px solid var(--accent3); }
+
+  .age-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .age-card.elementary .age-badge { color: var(--accent); }
+  .age-card.middle .age-badge { color: var(--accent3); }
+
+  .age-card h4 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 17px;
+    margin-bottom: 14px;
+  }
+
+  .age-card ul { list-style: none; padding: 0; }
+
+  .age-card li {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--rule);
+    line-height: 1.5;
+  }
+
+  .age-card li:last-child { border-bottom: none; }
+
+  .age-card.elementary li::before { content: '🌱 '; }
+  .age-card.middle li::before { content: '🔭 '; }
+
+  /* ===== PRINT DARK-BACKGROUND OVERRIDES ===== */
+  @media print {
+    html body .code-block {
+      background: #ffffff !important;
+      color: #1a1917 !important;
+      border: 1.5px solid #999 !important;
+    }
+    html body .code-block .code-label {
+      position: static !important;
+      display: block !important;
+      color: #555 !important;
+      margin-bottom: 8px !important;
+    }
+    html body .code-block .accent-line { color: #2e7d5e !important; }
+    html body .code-block .orange-line { color: #c8401a !important; }
+    html body .code-block .blue-line   { color: #2a5c8f !important; }
+    html body .code-block .muted-line  { color: #888 !important; }
+    html body .code-block .white-line  { color: #222 !important; }
+
+    html body .pricing-card.featured {
+      background: #ffffff !important;
+      color: #0f0e0c !important;
+      border: 2px solid #0f0e0c !important;
+    }
+    html body .pricing-card.featured .pricing-tier  { color: #7a7570 !important; }
+    html body .pricing-card.featured .pricing-price { color: #0f0e0c !important; }
+    html body .pricing-card.featured .pricing-price span { color: #7a7570 !important; }
+    html body .pricing-card.featured .pricing-features li { color: #7a7570 !important; }
+    html body .pricing-card.featured .pricing-features li::before { color: #2e7d5e !important; }
+    html body .pricing-card.featured .pricing-features { border-top-color: #d4cfc5 !important; }
+
+    html body .garden-header {
+      background: #ffffff !important;
+      border-bottom: 1.5px solid #0f0e0c !important;
+    }
+    html body .garden-header .gh-title { color: #555 !important; }
+    html body .garden-header .gh-dots  { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="cover">
+  <div class="cover-label">B2C 기획서 — 초등·중학생 대상</div>
+  <h1>질문하는<br><span>아이들</span></h1>
+  <p class="cover-sub">AI와 함께 질문하며 배우는 플랫폼. 더 좋은 질문을 하게 될수록 나만의 지식 정원이 자라난다. 아이는 탐험가가 되고, 부모는 성장을 본다.</p>
+  <div class="cover-meta">
+    <span><strong>전략</strong>B2C 전용</span>
+    <span><strong>타겟</strong>초등 4~6학년 · 중학생</span>
+    <span><strong>과금</strong>부모 구독</span>
+    <span><strong>버전</strong>v2 — 설계 원칙 개정</span>
+  </div>
+</section>
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-label">목차</div>
+  <ul class="toc-list">
+    <li><a href="#s1"><span class="num">01</span>핵심 철학</a></li>
+    <li><a href="#s2"><span class="num">02</span>핵심 컨셉</a></li>
+    <li><a href="#s3"><span class="num">03</span>사용자 설계</a></li>
+    <li><a href="#s4"><span class="num">04</span>학습 시스템</a></li>
+    <li><a href="#s5"><span class="num">05</span>지식 정원</a></li>
+    <li><a href="#s6"><span class="num">06</span>질문 성장 측정</a></li>
+    <li><a href="#s7"><span class="num">07</span>부모 시스템</a></li>
+    <li><a href="#s8"><span class="num">08</span>안전 설계</a></li>
+    <li><a href="#s9"><span class="num">09</span>경쟁사 분석</a></li>
+    <li><a href="#s10"><span class="num">10</span>수익 모델</a></li>
+    <li><a href="#s11"><span class="num">11</span>기술 스택</a></li>
+    <li><a href="#s12"><span class="num">12</span>로드맵</a></li>
+  </ul>
+</nav>
+
+<!-- 01 핵심 철학 -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <div class="section-num">01</div>
+    <div class="section-title-block">
+      <h2>핵심 철학</h2>
+      <p class="section-desc">왜 이 플랫폼인가</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="highlight">
+      <p>AI 시대에 가장 중요한 능력은 <strong>좋은 질문을 하는 것</strong>이다. 답은 AI가 줄 수 있지만, 무엇을 물어야 하는지는 사람만이 결정한다. 이 플랫폼은 아이들이 더 깊이, 더 날카롭게 질문하는 방법을 스스로 익히게 한다.</p>
+    </div>
+
+    <p>기존 교육 플랫폼은 <strong>답을 잘 찾는 것</strong>을 목표로 한다. 이 플랫폼은 반대다. <strong>더 좋은 질문을 만들어가는 과정</strong>이 학습이다. 아이가 AI와 대화하며 정보를 능동적으로 선택하고, 자신만의 지식을 구성하는 방법을 배운다.</p>
+
+    <p>질문 수준은 측정 가능하고, 훈련 가능하다. 교육학 연구에서 반복적으로 입증된 사실이다. 이 플랫폼은 그 성장을 눈에 보이게 만든다.</p>
+
+    <h3>교육학적 근거 — 왜 이 설계인가</h3>
+
+    <div class="highlight highlight-blue">
+      <p><strong>Marzano의 New Taxonomy (2007):</strong> Marzano와 Kendall은 학습이 인지 처리만으로 일어나지 않는다고 보았다. 아이가 탐구를 시작할지, 계속할지를 결정하는 것은 인지 수준이 아니라 <strong>자기 시스템(Self-System)</strong> — "이게 재미있는가, 나는 할 수 있는가" — 이다. 이 플랫폼의 지식 정원, 씨앗 심기, 부모 리포트는 모두 이 자기 시스템을 활성화하기 위한 설계다.</p>
+    </div>
+
+    <div class="highlight highlight-orange">
+      <p><strong>Bloom의 개정 분류 체계 (Anderson &amp; Krathwohl, 2001):</strong> 질문의 인지 수준을 기억·이해·적용·분석·평가·창조의 6단계로 분류한다. 이 플랫폼은 이를 아이 언어로 재해석해 씨앗(Lv.1) → 새싹(Lv.2) → 나무(Lv.3) → 세계(Lv.4) 4단계로 단순화했다.</p>
+    </div>
+
+    <div class="highlight">
+      <p><strong>SOLO Taxonomy (Biggs &amp; Collis, 1982):</strong> 학생이 실제로 보여주는 이해의 구조를 관찰 가능한 방식으로 분류한다. Bloom이 학습 목표를 기술하는 데 쓰인다면, SOLO는 실제로 나온 질문과 답변의 수준을 판단하는 데 더 적합하다. 이 플랫폼의 질문 분류는 SOLO의 관찰 기반 접근을 따른다.</p>
+    </div>
+
+    <p>세 프레임워크를 함께 쓰는 이유는 각각이 다른 것을 본다. Marzano는 <strong>왜 아이가 탐구를 시작하는가</strong>를, Bloom은 <strong>어떤 수준의 질문인가</strong>를, SOLO는 <strong>실제 질문이 어느 단계에 있는가</strong>를 알려준다. 이 세 가지가 이 플랫폼 설계의 이론적 토대다.</p>
+
+    <table>
+      <thead><tr><th>프레임워크</th><th>저자·연도</th><th>이 플랫폼에서의 역할</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>New Taxonomy</strong></td>
+          <td>Marzano &amp; Kendall, 2007</td>
+          <td>자기 시스템 활성화 — 지식 정원, 씨앗, 부모 리포트 설계 근거</td>
+        </tr>
+        <tr>
+          <td><strong>Revised Bloom's</strong></td>
+          <td>Anderson &amp; Krathwohl, 2001</td>
+          <td>질문 수준 4단계 분류 체계의 인지적 근거</td>
+        </tr>
+        <tr>
+          <td><strong>SOLO Taxonomy</strong></td>
+          <td>Biggs &amp; Collis, 1982</td>
+          <td>실제 질문의 관찰 가능한 수준 판단 기준</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <thead>
+        <tr><th>기존 AI 튜터</th><th>이 플랫폼</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>답을 잘 설명해준다</td><td>더 좋은 질문을 하도록 이끈다</td></tr>
+        <tr><td>지식을 전달한다</td><td>지식을 스스로 구성하게 한다</td></tr>
+        <tr><td>학습 결과 = 점수</td><td>학습 결과 = 질문의 성장 + 지식 정원</td></tr>
+        <tr><td>아이가 수동적</td><td>아이가 탐험가</td></tr>
+        <tr><td>부모는 소비자</td><td>부모는 코치</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 02 핵심 컨셉 -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <div class="section-num">02</div>
+    <div class="section-title-block">
+      <h2>핵심 컨셉</h2>
+      <p class="section-desc">지식 정원과 질문 탐험</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>지식 정원 — 성장이 보이는 공간</h3>
+    <p>아이가 탐구를 완료할 때마다 나만의 지식 정원이 자란다. 포인트나 뱃지가 아니다. 내가 궁금해했던 것들이 시각적인 세계로 쌓이는 경험이다. AI가 탐구 내용을 바탕으로 배경 이미지를 생성해 정원이 조금씩 바뀐다.</p>
+
+    <div class="garden-visual">
+      <div class="garden-header">
+        <div class="gh-title">지식 정원 성장 단계</div>
+        <div class="gh-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="garden-stages">
+        <div class="garden-stage">
+          <span class="stage-icon">🌱</span>
+          <div class="stage-name">씨앗</div>
+          <div class="stage-desc">첫 탐구 완료.<br>황량한 땅에 싹이 튼다.</div>
+        </div>
+        <div class="garden-stage">
+          <span class="stage-icon">🌿</span>
+          <div class="stage-name">새싹</div>
+          <div class="stage-desc">5회 탐구.<br>작은 나무들이 자란다.</div>
+        </div>
+        <div class="garden-stage">
+          <span class="stage-icon">🌳</span>
+          <div class="stage-name">숲</div>
+          <div class="stage-desc">15회 탐구.<br>연결된 주제들이 가지로 이어진다.</div>
+        </div>
+        <div class="garden-stage">
+          <span class="stage-icon">🌏</span>
+          <div class="stage-name">세계</div>
+          <div class="stage-desc">30회 탐구.<br>나만의 지식 세계 완성.</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>초등 vs 중학생 — 다른 세계관</h3>
+    <p>같은 시스템이지만 나이에 따라 시각적 언어가 다르다. 초등학생에게는 따뜻하고 생동감 있는 정원이, 중학생에게는 탐험가적 감각의 지식 우주가 어울린다.</p>
+
+    <div class="age-compare">
+      <div class="age-card elementary">
+        <div class="age-badge">초등 4~6학년</div>
+        <h4>지식 정원 🌱</h4>
+        <ul>
+          <li>따뜻한 색감, 귀여운 식물과 동물</li>
+          <li>탐구 주제마다 다른 생물이 등장</li>
+          <li>과학 탐구 → 우주 배경, 역사 → 고대 문명 배경</li>
+          <li>"오늘의 탐험 미션" 프레이밍</li>
+          <li>AI가 탐구 내용으로 정원 이미지 생성</li>
+        </ul>
+      </div>
+      <div class="age-card middle">
+        <div class="age-badge">중학생 1~3학년</div>
+        <h4>지식 우주 🔭</h4>
+        <ul>
+          <li>세련된 톤, 별자리·지도 느낌</li>
+          <li>탐구 주제가 별이 되고 연결선이 생김</li>
+          <li>"내가 어떤 질문을 잘하는 사람인가" 정체성</li>
+          <li>게임 요소 최소화, 성장 데이터 강조</li>
+          <li>과거 질문 vs 현재 질문 비교 피처 전면화</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 사용자 설계 -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <div class="section-num">03</div>
+    <div class="section-title-block">
+      <h2>사용자 설계</h2>
+      <p class="section-desc">세 명의 사용자</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="highlight highlight-blue">
+      <p>이 서비스에는 세 명의 사용자가 있다. <strong>아이</strong>는 탐험가로 정원을 키우고, <strong>부모</strong>는 성장 코치로 자녀를 돕고, <strong>플랫폼</strong>은 질문 성장 데이터를 축적한다. 세 명이 각각 다른 이유로 이 서비스를 쓰게 만드는 것이 핵심 설계다.</p>
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona-card">
+        <div class="persona-top">
+          <span class="persona-emoji">🧒</span>
+          <div class="persona-name">초등학생 — 탐험가</div>
+          <div class="persona-meta">초등 4~6학년 · 주 사용자</div>
+        </div>
+        <div class="persona-body">
+          <p>재미있는 주제를 골라 AI와 대화하며 궁금한 것을 파고든다. 탐구가 끝나면 정원이 자라는 것을 보며 성취감을 느낀다. 공부라는 느낌이 아니라 탐험이라는 느낌으로 접근한다.</p>
+        </div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-top">
+          <span class="persona-emoji">🧑‍🎓</span>
+          <div class="persona-name">중학생 — 탐구자</div>
+          <div class="persona-meta">중학 1~3학년 · 주 사용자</div>
+        </div>
+        <div class="persona-body">
+          <p>관심 있는 주제를 깊이 파고들며 내 질문이 얼마나 날카로워지고 있는지 확인한다. "나는 어떤 사람인가"에 관심이 큰 나이. 질문 성장 그래프가 자아 정체성과 연결된다.</p>
+        </div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-top">
+          <span class="persona-emoji">👨‍👩‍👧</span>
+          <div class="persona-name">부모 — 코치</div>
+          <div class="persona-meta">실제 결제자 · 보조 사용자</div>
+        </div>
+        <div class="persona-body">
+          <p>자녀의 모든 대화와 질문 성장 데이터를 볼 수 있다. 매주 피드백 리포트를 받고, "오늘 저녁 아이에게 해볼 대화"를 추천받는다. 결제 권한과 감독 권한이 함께 있다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 학습 시스템 -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <div class="section-num">04</div>
+    <div class="section-title-block">
+      <h2>학습 시스템</h2>
+      <p class="section-desc">한 번의 탐구가 작동하는 방식</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>탐구 한 세션의 흐름</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 1 — 주제 발견</div>
+          <p class="flow-desc">빈 화면 앞에서 아이는 막힌다. 처음 진입하면 "요즘 아이들이 많이 탐구하는 주제"와 AI가 제안하는 "오늘의 흥미로운 질문" 3개가 보인다. 직접 입력도 가능하다. 첫 탐구 완주율을 높이는 게 이 단계의 목표다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 2 — AI와 씨앗 대화</div>
+          <p class="flow-desc">AI는 아이의 질문에 충분하고 흥미롭게 답한다. 답변 마지막에는 항상 완전히 설명하지 않은 놀라운 사실 하나를 흘린다. 아이가 그 사실이 궁금해서 스스로 다음 질문을 하게 된다. 역질문 없이 아이가 먼저 묻는 구조다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 3 — 질문 패턴 조용한 감지</div>
+          <p class="flow-desc">아이가 대화하는 동안 시스템은 조용히 질문 패턴을 기록한다. 아이에게 레벨이나 점수를 보여주지 않는다. 새로운 유형의 질문이 처음 나왔을 때만 "오, 정말 특별한 질문이에요! 🎉"로 크게 반응한다. 격려는 크게, 측정은 조용히.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 4 — 탐구 노트 자동 생성</div>
+          <p class="flow-desc">탐구가 끝나면 대화 흐름을 바탕으로 HTML 노트가 자동 생성된다. 내가 어떤 질문을 했고, 어떻게 이해했는지가 담긴 나만의 탐구 기록. PDF 저장과 공유도 가능하다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 5 — 단답 퀴즈 (1문제)</div>
+          <p class="flow-desc">노트 생성 직후, AI가 이번 탐구의 씨앗 내용을 바탕으로 단답형 주관식 문제 1개를 자동 생성한다. 1문제이기 때문에 부담이 없다. 틀려도 괜찮다 — 오답은 다음 탐구 주제 추천에 조용히 반영된다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">Step 6 — 정원 업데이트 + 부모 알림</div>
+          <p class="flow-desc">탐구 완료 후 지식 정원에 새로운 요소가 추가된다. 새로운 질문 유형이 처음 등장했다면 부모에게 즉시 알림이 발송된다. "오늘 민준이가 처음으로 만약에 질문을 했어요 🎉"</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>핵심 메커니즘 — 답 안에 씨앗을 심는다</h3>
+
+    <p>역질문은 작동하지 않는다. 아이가 질문을 하는 이유는 <strong>답이 궁금해서</strong>이기 때문이다. AI가 역질문으로 돌려보내면 아이는 답답함을 느끼고 앱을 닫는다. 이 플랫폼은 다른 방식으로 작동한다.</p>
+
+    <div class="highlight highlight-orange">
+      <p><strong>설계 원칙 — 열린 끝맺음:</strong> AI는 아이의 질문에 충분하고 흥미롭게 답한다. 그리고 답변의 마지막에 <strong>완전히 설명하지 않은 놀라운 사실 하나</strong>를 흘린다. 아이는 그 사실이 궁금해서 스스로 다음 질문을 하게 된다. 역질문 없이 아이가 먼저 묻는다.</p>
+    </div>
+
+    <h3>씨앗의 종류 — 현재 패턴에 따라 다른 씨앗을 심는다</h3>
+    <p>아이가 질문을 많이 하게 만드는 것이 먼저다. 그 다음, 씨앗의 종류를 조절해서 질문의 수준이 자연스럽게 높아지도록 유도한다. 아이의 현재 질문 패턴을 시스템 프롬프트에 주입해 AI가 맞는 씨앗을 고르게 한다.</p>
+
+    <table>
+      <thead><tr><th>아이의 현재 패턴</th><th>심는 씨앗 유형</th><th>씨앗 예시 (답변 마지막 문장)</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-gray">사실 확인 위주</span></td>
+          <td>이유·원인 씨앗</td>
+          <td>"그런데 왜 하필 그때였는지는 아직도 과학자들이 논쟁 중이에요."</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">이유 탐구 위주</span></td>
+          <td>반례·가설 씨앗</td>
+          <td>"그런데 어떤 과학자들은 반대 상황에서도 똑같은 결과가 나왔다고 해요."</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">가설 설정 위주</span></td>
+          <td>연결·전이 씨앗</td>
+          <td>"재미있는 건 이 원리가 완전히 다른 분야에서도 똑같이 나타난다는 거예요."</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-orange">전이 연결 위주</span></td>
+          <td>미해결 문제 씨앗</td>
+          <td>"사실 이 질문은 아직 인류가 답을 찾지 못한 문제 중 하나예요."</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="code-block">
+      <div class="code-label">대화 예시 — 씨앗 심기 방식 (역질문 없음)</div>
+<span class="muted-line">주제: 공룡 멸종 / 현재 패턴: 사실 확인 위주</span>
+
+<span class="blue-line">아이: "공룡은 언제 멸종했어요?"</span>
+
+<span class="accent-line">AI: "약 6,600만 년 전이에요. 그때 지름 10km짜리 소행성이 충돌해서</span>
+<span class="accent-line">     햇빛이 수년간 가려지고, 지구 온도가 급격히 떨어졌어요.</span>
+<span class="accent-line">     그런데 그 충돌에서 살아남은 동물이 있었는데,</span>
+<span class="accent-line">     그 후손이 지금도 우리 주변에 살고 있어요."</span>
+<span class="muted-line">→ 역질문 없음. 마지막 문장이 씨앗 — 완전히 설명하지 않고 멈춤</span>
+
+<span class="blue-line">아이: "어떤 동물이요??" (스스로 질문)</span>
+<span class="muted-line">→ 아이가 먼저 묻는다. 대화 지속.</span>
+
+<span class="accent-line">AI: "새예요! 새가 사실 공룡의 직접 후손이거든요.</span>
+<span class="accent-line">     지금도 지구에 1만 종이 넘게 살아있어요.</span>
+<span class="accent-line">     그런데 왜 새만 살아남고 티라노사우루스는 못 살아남았는지</span>
+<span class="accent-line">     과학자들이 아직도 정확한 이유를 찾고 있어요."</span>
+<span class="muted-line">→ 다시 씨앗 (이유·원인 씨앗). 패턴을 Lv.2 방향으로 유도 중.</span>
+
+<span class="blue-line">아이: "왜 새만 살아남은 거예요?"</span>
+<span class="muted-line">→ Lv.2 이유 탐구 질문 발생. 패턴 업데이트.</span>
+    </div>
+
+    <h3>씨앗 설계 원칙 — 항상 심되, 분포를 고르게</h3>
+
+    <div class="highlight highlight-orange">
+      <p>씨앗을 심지 않으면 대화가 끊긴다. 씨앗 없는 턴에서 아이가 질문하지 않으면 측정할 수 없고, 질문하면 voluntary_rate는 항상 1이 된다 — 측정 자체가 의미 없다. 따라서 <strong>씨앗은 항상 심는다.</strong> 대신 씨앗의 종류를 조절해서 아이의 질문이 4가지 유형에 고르게 분포되도록 유도한다.</p>
+    </div>
+
+    <h3>씨앗 분포 균형 로직</h3>
+    <p>누적 질문 패턴을 보고 특정 유형이 과하게 쏠려 있으면, 다른 유형의 씨앗 비율을 높인다. 목표는 4가지 질문 유형이 고르게 나오는 것이다.</p>
+
+    <div class="code-block">
+      <div class="code-label">씨앗 유형 선택 로직</div>
+<span class="accent-line">현재 누적 질문 분포 (최근 20개 기준):</span>
+<span class="blue-line">  Lv.1 사실확인: 60% / Lv.2 이유탐구: 30%</span>
+<span class="blue-line">  Lv.3 가설설정: 10% / Lv.4 전이연결:  0%</span>
+        ↓
+<span class="accent-line">목표 분포 대비 부족한 유형 계산:</span>
+<span class="white-line">  target = {Lv.1: 25%, Lv.2: 30%, Lv.3: 30%, Lv.4: 15%}</span>
+<span class="white-line">  deficit = target - current  →  Lv.3, Lv.4 부족</span>
+        ↓
+<span class="accent-line">다음 씨앗 유형 결정:</span>
+<span class="blue-line">  deficit 비율에 비례해 씨앗 유형 가중치 설정</span>
+<span class="blue-line">  → Lv.3 가설 씨앗 50% / Lv.4 전이 씨앗 50%</span>
+<span class="muted-line">  (deficit이 없으면 현재 패턴 + 1단계 높은 유형으로)</span>
+        ↓
+<span class="accent-line">system_prompt에 주입:</span>
+<span class="blue-line">  target_seed_type = "반례·가설 씨앗"</span>
+    </div>
+
+    <table>
+      <thead><tr><th>누적 패턴 상태</th><th>씨앗 선택 전략</th><th>목적</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>특정 유형 쏠림</td>
+          <td>부족한 유형 씨앗 집중 투입</td>
+          <td>질문 레퍼토리 확장</td>
+        </tr>
+        <tr>
+          <td>고른 분포</td>
+          <td>현재보다 한 단계 높은 유형 씨앗</td>
+          <td>전체 수준 점진적 상승</td>
+        </tr>
+        <tr>
+          <td>Lv.4 비율 15% 이상</td>
+          <td>자유롭게 순환</td>
+          <td>유지 및 심화</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>답변 길이 — 아이의 질문 길이에 반응</h3>
+    <p>짧게 질문하는 아이는 긴 글을 읽기 싫어한다. 길게 쓰는 아이는 깊은 답변을 원한다. <strong>아이의 질문 길이를 기준으로 답변 길이를 동적으로 맞춘다.</strong></p>
+
+    <div class="code-block">
+      <div class="code-label">답변 길이 반응 로직</div>
+<span class="accent-line">아이 질문 길이 측정 (글자 수 기준):</span>
+<span class="blue-line">  ~15자  → 짧은 답변 (1~2문장 + 씨앗 1문장)</span>
+<span class="blue-line">  16~40자 → 중간 답변 (3~4문장 + 씨앗 1문장)</span>
+<span class="blue-line">  41자~  → 긴 답변   (충분한 설명 + 씨앗 1문장)</span>
+
+<span class="muted-line">예시 — 짧은 질문:</span>
+<span class="white-line">  아이: "공룡 멸종 언제요?"  (8자)</span>
+<span class="accent-line">  AI:  "6,600만 년 전이에요.</span>
+<span class="accent-line">        그런데 그때 살아남은 동물 후손이 지금도 있어요."</span>
+<span class="muted-line">  → 2문장으로 끝. 씨앗 포함.</span>
+
+<span class="muted-line">예시 — 긴 질문:</span>
+<span class="white-line">  아이: "소행성이 충돌했을 때 공룡은 왜 전부 멸종했는데</span>
+<span class="white-line">         다른 작은 동물들은 살아남을 수 있었던 건가요?" (52자)</span>
+<span class="accent-line">  AI:  "정말 좋은 질문이에요. 크기 차이가 핵심이에요...</span>
+<span class="accent-line">        [충분한 설명 3~4문장]</span>
+<span class="accent-line">        그런데 크기 말고도 다른 생존 요인이 있었는데,</span>
+<span class="accent-line">        그중 하나는 지금도 논쟁 중이에요."</span>
+<span class="muted-line">  → 충분한 설명 + 씨앗.</span>
+    </div>
+
+    <div class="highlight">
+      <p><strong>구현 방법:</strong> 시스템 프롬프트에 "아이의 질문이 {question_length}자입니다. 답변은 {target_length} 길이로 작성하세요"를 동적 주입한다. 씨앗은 길이와 무관하게 항상 마지막 1~2문장에 포함한다.</p>
+    </div>
+
+    <h3>구현 시 주의사항</h3>
+    <table>
+      <thead><tr><th>도전</th><th>내용</th><th>대응 방법</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>씨앗 일관성</strong></td>
+          <td>짧은 답변에서 씨앗이 누락되는 경우 발생.</td>
+          <td>평가 세트 구성 후 반복 테스트. 씨앗 포함율 목표 90% 이상.</td>
+        </tr>
+        <tr>
+          <td><strong>자연스러움</strong></td>
+          <td>짧은 답변에서 씨앗이 어색하게 붙는 경우.</td>
+          <td>짧은 답변용 Few-shot 예시 별도 구성. 씨앗이 자연스럽게 이어지도록.</td>
+        </tr>
+        <tr>
+          <td><strong>분포 목표값</strong></td>
+          <td>목표 분포(25/30/30/15)가 모든 아이에게 맞지 않을 수 있음.</td>
+          <td>Phase 1 베타 데이터로 목표 분포 조정. 연령별로 달리 설정 가능.</td>
+        </tr>
+      </tbody>
+    </table>
+      </tbody>
+    </table>
+
+    <h3>단답 퀴즈 — 탐구 노트 직후 1문제</h3>
+    <p>노트 생성 직후 단답형 주관식 문제 1개를 푼다. 시험이 아니라 <strong>"내가 뭘 이해했는지 스스로 확인하는 것"</strong>이 목적이다. 1문제이기 때문에 부담이 없다. 틀려도 괜찮다는 분위기를 유지한다.</p>
+
+    <div class="highlight">
+      <p><strong>설계 원칙:</strong> 탐구 대화에서 나온 씨앗 내용 중 가장 인상적인 것을 1문제로 출제한다. 정답은 한 단어 또는 짧은 구절로 답할 수 있어야 한다. 맞히면 정원에 작은 반짝임 효과, 틀리면 "아, 그렇구나!" 톤으로 정답 알려주기. 점수는 표시하지 않는다. 오답 여부는 다음 탐구 주제 추천에 조용히 반영된다.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">퀴즈 생성 예시 — 공룡 멸종 탐구 후</div>
+<span class="accent-line">탐구 노트 + 씨앗 내용 분석 → 1문제 자동 생성</span>
+<span class="muted-line">(이번 탐구의 씨앗: "충돌에서 살아남은 동물의 후손이 지금도 우리 주변에")</span>
+
+<span class="blue-line">Q. 공룡 멸종에서 살아남아 지금도 우리 주변에 사는 동물은?</span>
+<span class="muted-line">   → 정답: 새</span>
+
+<span class="accent-line">오답 시:</span>
+<span class="blue-line">  "아, 정답은 새예요! 새가 공룡의 직접 후손이랍니다. 🐦"</span>
+<span class="muted-line">  → 오답 태그 저장 → 다음 추천에 "조류 진화" 관련 주제 가중치 반영</span>
+    </div>
+  </div>
+</section>
+
+<!-- 05 지식 정원 -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <div class="section-num">05</div>
+    <div class="section-title-block">
+      <h2>지식 정원</h2>
+      <p class="section-desc">성장이 보이는 나만의 공간</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <h3>설계 원칙 — 게임이 아닌 성장 시각화</h3>
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-label">하지 않는 것</div>
+        <div class="col-title">게임적 요소</div>
+        <ul>
+          <li>포인트·점수 수치</li>
+          <li>다른 아이들과의 랭킹 비교</li>
+          <li>스트릭·연속 출석 압박</li>
+          <li>레벨 숫자 표시</li>
+          <li>수집형 뱃지</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <div class="col-label">하는 것</div>
+        <div class="col-title">성장 시각화</div>
+        <ul>
+          <li>정원/우주가 눈에 보이게 자람</li>
+          <li>AI 생성 배경이 탐구 내용으로 조금씩 바뀜</li>
+          <li>과거 질문 vs 현재 질문 비교</li>
+          <li>나만의 탐구 포트폴리오 누적</li>
+          <li>퀴즈 결과가 다음 탐구 추천에 반영</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>AI 이미지 생성 — 정원이 바뀌는 방식</h3>
+    <p>탐구가 쌓일수록 AI가 그 내용을 분석하여 배경 이미지를 생성한다. 단순한 꾸미기가 아니라 내가 공부한 것이 세계가 되는 경험이다.</p>
+
+    <div class="code-block">
+      <div class="code-label">이미지 생성 로직</div>
+<span class="accent-line">탐구 주제 분석:</span>
+<span class="muted-line">  공룡 멸종 + 우주 + 지구 역사 탐구 누적</span>
+        ↓
+<span class="accent-line">배경 생성 프롬프트 자동 구성:</span>
+<span class="blue-line">  "선사시대 식물이 있는 신비로운 협곡,</span>
+<span class="blue-line">   하늘에는 소행성이 지나가고,</span>
+<span class="blue-line">   멀리 빛나는 별들이 보이는 따뜻한 정원"</span>
+        ↓
+<span class="accent-line">이미지 생성 → 정원 배경 업데이트</span>
+<span class="muted-line">  (탐구 5회마다 배경이 조금씩 변화)</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- 06 질문 성장 측정 -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <div class="section-num">06</div>
+    <div class="section-title-block">
+      <h2>질문 성장<br>측정</h2>
+      <p class="section-desc">정확도가 아닌 방향성 — 성장의 순간을 포착한다</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight highlight-orange">
+      <p>분류가 100% 정확할 필요는 없다. 중요한 건 <strong>아이와 부모가 "뭔가 달라지고 있다"고 느끼는 것</strong>이다. 시스템은 성장의 방향을 가리키는 나침반이지, 정밀한 측정 도구가 아니다.</p>
+    </div>
+
+    <h3>분류 설계 원칙 — 3가지 규칙</h3>
+
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-label">규칙 1</div>
+        <div class="col-title">관대하게 분류한다</div>
+        <ul>
+          <li>같은 질문이 Lv.2와 Lv.3 경계라면 항상 높은 쪽으로</li>
+          <li>오류는 격려 방향으로 낸다</li>
+          <li>아이가 "왜 내 질문이 낮게 분류됐지?"를 느끼면 안 된다</li>
+          <li>다운그레이드는 하지 않는다</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <div class="col-label">규칙 2</div>
+        <div class="col-title">패턴으로 판단한다</div>
+        <ul>
+          <li>질문 하나가 아닌 10개 묶음으로 패턴을 읽는다</li>
+          <li>한 번의 오분류가 전체 결과를 망치지 않는다</li>
+          <li>"이 아이는 주로 이런 방식으로 궁금해한다"를 파악</li>
+          <li>탐구 세션 단위로 패턴을 업데이트한다</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <p><strong>규칙 3 — 레벨보다 "첫 번째 순간"이 중요하다.</strong> Lv.4에 도달하는 것보다, 아이가 사실 확인만 하다가 <strong>처음으로 "만약에" 질문을 했을 때</strong>가 진짜 성장 순간이다. 이 첫 번째 순간을 시스템이 감지하고, 아이와 부모 모두에게 크게 축하한다.</p>
+    </div>
+
+    <h3>질문 수준 분류 체계 (Bloom + SOLO 기반)</h3>
+    <p>교육학의 Bloom 분류 체계와 SOLO 분류 체계를 아이들 언어로 재해석했다. 레벨은 위계가 아니라 <strong>질문 스타일의 스펙트럼</strong>으로 제시한다.</p>
+
+    <table>
+      <thead><tr><th>수준</th><th>아이 언어</th><th>질문 특징</th><th>첫 등장 시 반응</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tag tag-gray">Lv.1</span></td>
+          <td>🌱 씨앗 질문</td>
+          <td>"이게 뭐야?" 사실 확인</td>
+          <td>탐구의 시작 — 정원에 씨앗 심기</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-blue">Lv.2</span></td>
+          <td>🌿 새싹 질문</td>
+          <td>"왜 그래?" 이유 탐구</td>
+          <td>"왜인지 궁금해하기 시작했어요! 🌿"</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-green">Lv.3</span></td>
+          <td>🌳 나무 질문</td>
+          <td>"만약 ~라면?" 가설 설정</td>
+          <td>"처음으로 만약에 질문을 했어요! 🎉" — 부모 알림 발송</td>
+        </tr>
+        <tr>
+          <td><span class="tag tag-orange">Lv.4</span></td>
+          <td>🌏 세계 질문</td>
+          <td>"이걸 다른 데 적용하면?" 전이</td>
+          <td>"이건 정말 깊은 질문이에요! 🌏" — 부모 알림 발송</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>성장 시각화 — 두 가지 핵심 뷰</h3>
+
+    <h4>1. 과거 vs 현재 질문 나란히 보기 — 최소 2주 간격</h4>
+    <p>하루 이틀 사이의 변화는 잘 느껴지지 않는다. <strong>2~3주 전 질문과 오늘 질문을 나란히</strong> 보여줄 때 아이도 부모도 "와, 달라졌네"를 체감한다.</p>
+    <div class="q-evolution">
+      <div class="q-row">
+        <div class="q-time">3주 전</div>
+        <div class="q-text">"공룡은 언제 멸종했어요?"</div>
+        <div class="q-level"><span class="tag tag-gray">Lv.1</span></div>
+      </div>
+      <div class="q-row">
+        <div class="q-time">2주 전</div>
+        <div class="q-text">"소행성이 공룡을 멸종시킨 이유가 뭐예요?"</div>
+        <div class="q-level"><span class="tag tag-blue">Lv.2</span></div>
+      </div>
+      <div class="q-row">
+        <div class="q-time">1주 전</div>
+        <div class="q-text">"소행성이 없었어도 공룡이 멸종했을까요?"</div>
+        <div class="q-level"><span class="tag tag-green">Lv.3 ✦ 첫 등장</span></div>
+      </div>
+      <div class="q-row">
+        <div class="q-time">오늘</div>
+        <div class="q-text">"공룡 멸종과 현재 기후 위기는 어떤 점이 비슷할까요?"</div>
+        <div class="q-level"><span class="tag tag-orange">Lv.4</span></div>
+      </div>
+    </div>
+
+    <h4>2. 질문 유형 분포 레이더</h4>
+    <p>사실 확인 / 이유 탐구 / 가설 설정 / 전이 연결 네 축으로 아이의 질문 스타일을 시각화한다. 레이더가 바깥으로 고르게 확장될수록 다양한 방식으로 생각하는 아이가 된다. 특정 축이 튀어나와 있어도 괜찮다 — 그게 이 아이의 개성이다.</p>
+
+    <h3>패턴 감지 → 씨앗 유형 자동 조정</h3>
+    <p>시스템이 패턴을 감지하면 아이에게 직접 알리지 않는다. 대신 <strong>다음 대화에서 AI가 심는 씨앗의 유형을 조용히 바꾼다</strong>. 아이는 모르는 사이에 자연스럽게 더 깊은 질문 방향으로 이동하게 된다.</p>
+
+    <div class="code-block">
+      <div class="code-label">패턴 감지 → 씨앗 유형 자동 조정 파이프라인</div>
+<span class="orange-line">감지: 최근 10개 질문 → 사실확인(Lv.1) 8개, 가설설정(Lv.3) 0개</span>
+        ↓
+<span class="muted-line">"부족하다" 메시지 ✗  /  별도 훈련 세션 ✗  /  역질문 ✗</span>
+        ↓
+<span class="accent-line">system_prompt 업데이트:</span>
+<span class="blue-line">  target_seed_type = "반례·가설 씨앗"</span>
+<span class="blue-line">  "답변 마지막에 반드시 이런 씨앗을 심을 것:</span>
+<span class="blue-line">   '그런데 반대 상황에서는 어떤 결과가 나왔는지</span>
+<span class="blue-line">    과학자들이 최근에 발견했어요.'"</span>
+        ↓
+<span class="accent-line">아이가 스스로 가설 질문을 처음 했을 때:</span>
+<span class="blue-line">  AI: "오! 이건 정말 특별한 질문이에요.</span>
+<span class="blue-line">       처음으로 만약에를 물어봤어요! 🎉"</span>
+<span class="muted-line">  → 정원에 새 나무 등장 + 부모 즉시 알림 발송</span>
+    </div>
+  </div>
+</section>
+
+<!-- 07 부모 시스템 -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <div class="section-num">07</div>
+    <div class="section-title-block">
+      <h2>부모 시스템</h2>
+      <p class="section-desc">데이터가 아닌 장면 — 부모가 변화를 느끼게 한다</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight highlight-blue">
+      <p>부모가 "아이가 성장했다"고 느끼는 순간은 <strong>데이터를 볼 때가 아니라 구체적인 장면을 볼 때</strong>다. 리포트의 목적은 통계 전달이 아니라 그 장면을 부모 앞에 놓는 것이다. 이 감정이 구독을 유지시킨다.</p>
+    </div>
+
+    <h3>부모가 변화를 느끼는 3가지 설계</h3>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">설계 1 — 이번 주의 질문 하나</div>
+          <p class="flow-desc">통계나 그래프가 아니라, 아이가 이번 주에 한 가장 인상적인 질문 하나를 뽑아 보여준다. 왜 이 질문이 인상적인지 한 문장으로 설명한다. 부모는 그 질문을 읽는 순간 아이가 그런 생각을 했다는 것을 실감한다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">설계 2 — 리포트 첫 문장은 항상 칭찬</div>
+          <p class="flow-desc">"이번 주 민준이는 처음으로 가설 질문을 했어요." 데이터 요약이 아니라 아이의 성취 한 줄로 시작한다. 이 첫 문장을 읽는 순간 부모가 앱을 열고 싶어진다. 부족한 점은 리포트 하단, 실행 가능한 제안과 함께 넣는다.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">설계 3 — 2~3주 전후 비교 자동 제공</div>
+          <p class="flow-desc">하루 이틀 변화는 느끼기 어렵다. 시스템이 자동으로 2~3주 전 질문과 오늘 질문을 나란히 보여준다. 설명 없이 두 질문만 보아도 달라졌다는 것이 느껴지도록 선별한다.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>주간 부모 리포트 — 구조 설계</h3>
+    <p>매주 월요일 아침, 지난 주 요약과 이번 주 실천 가이드가 함께 전달된다. 읽는 데 2분이면 충분한 분량으로 유지한다.</p>
+
+    <div class="code-block">
+      <div class="code-label">주간 부모 리포트 예시 — 칭찬 우선 구조</div>
+<span class="accent-line">📬 이번 주 민준이 리포트</span>
+
+<span class="white-line">✦ 이번 주의 한 줄:</span>
+<span class="blue-line">  "처음으로 만약에 질문을 했어요!"</span>
+<span class="muted-line">  → 가설 설정 질문은 창의적 사고의 시작입니다.</span>
+
+<span class="white-line">✦ 이번 주의 질문:</span>
+<span class="blue-line">  "소행성이 없었어도 공룡이 멸종했을까요?"</span>
+<span class="muted-line">  → 3주 전 질문: "공룡은 언제 멸종했어요?"</span>
+<span class="accent-line">  → 이 변화, 느껴지시나요?</span>
+
+<span class="white-line">✦ 탐구 현황:</span>
+<span class="muted-line">  공룡 멸종, 소행성, 지구 역사 (총 3회)</span>
+
+<span class="white-line">✦ 오늘 저녁 대화 제안:</span>
+<span class="blue-line">  "공룡이 멸종한 것처럼, 지금 우리 주변에서</span>
+<span class="blue-line">   사라지고 있는 것들이 있을까?"</span>
+<span class="muted-line">  → 다른 분야로 연결하는 질문 연습에 좋아요.</span>
+    </div>
+
+    <h3>부모가 볼 수 있는 것 — 완전 투명성</h3>
+    <table>
+      <thead><tr><th>항목</th><th>내용</th><th>목적</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>전체 대화 열람</td>
+          <td>자녀가 AI와 나눈 모든 대화 기록</td>
+          <td>안전 모니터링 + 학습 내용 파악</td>
+        </tr>
+        <tr>
+          <td>이번 주의 질문</td>
+          <td>가장 인상적인 질문 1개 + 한 줄 설명</td>
+          <td>성장 장면을 직접 느끼게 함</td>
+        </tr>
+        <tr>
+          <td>전후 질문 비교</td>
+          <td>2~3주 전 질문 vs 오늘 질문 나란히</td>
+          <td>변화를 데이터 없이 체감</td>
+        </tr>
+        <tr>
+          <td>질문 유형 분포</td>
+          <td>4가지 질문 스타일 비율 추이</td>
+          <td>아이의 사고 패턴 파악</td>
+        </tr>
+        <tr>
+          <td>관심 주제 지도</td>
+          <td>탐구한 주제 연결 지도</td>
+          <td>자녀의 관심사 파악</td>
+        </tr>
+        <tr>
+          <td>탐구 노트 모음</td>
+          <td>완성된 HTML 노트 전체 아카이브</td>
+          <td>포트폴리오 자산</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>저녁 대화 제안 — 부모를 코치로 만드는 설계</h3>
+    <p>매주 리포트에 포함되는 저녁 대화 제안은 아이의 현재 질문 패턴을 분석해 자동 생성된다. 부모가 교육 전문가가 아니어도 아이의 질문 능력 성장에 자연스럽게 기여할 수 있다.</p>
+
+    <table>
+      <thead><tr><th>아이 패턴</th><th>저녁 대화 제안 방향</th><th>예시 질문</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>사실 확인 위주</td>
+          <td>이유를 같이 생각해보기</td>
+          <td>"왜 그런 일이 생겼을까? 같이 생각해볼까?"</td>
+        </tr>
+        <tr>
+          <td>이유 탐구 위주</td>
+          <td>만약에 상상하기</td>
+          <td>"만약 그게 반대였다면 어떻게 됐을까?"</td>
+        </tr>
+        <tr>
+          <td>가설 설정 등장</td>
+          <td>일상과 연결하기</td>
+          <td>"오늘 배운 것이랑 비슷한 게 우리 일상에 있을까?"</td>
+        </tr>
+        <tr>
+          <td>다양한 유형 혼합</td>
+          <td>아이가 부모에게 설명하기</td>
+          <td>"이번 주에 탐구한 것, 엄마/아빠한테 설명해줄 수 있어?"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>부모 설정 권한</h3>
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-label">안전 설정</div>
+        <div class="col-title">대화 관리</div>
+        <ul>
+          <li>허용 주제 범위 설정</li>
+          <li>일일 사용 시간 제한</li>
+          <li>새 탐구 시 부모 알림</li>
+          <li>새로운 질문 유형 첫 등장 즉시 알림</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <div class="col-label">학습 설정</div>
+        <div class="col-title">탐구 관리</div>
+        <ul>
+          <li>주간 탐구 목표 횟수 설정</li>
+          <li>관심 분야 선호 설정</li>
+          <li>리포트 수신 요일 선택</li>
+          <li>자녀와 함께 보기 모드</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 안전 설계 -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <div class="section-num">08</div>
+    <div class="section-title-block">
+      <h2>안전 설계</h2>
+      <p class="section-desc">부모 신뢰의 전제 조건</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight highlight-orange">
+      <p>초등·중학생 대상 AI 서비스에서 안전성은 기능이 아니라 <strong>존재 조건</strong>이다. 부모가 신뢰하지 않으면 결제가 없다. 안전 설계는 제품의 전제다.</p>
+    </div>
+
+    <h3>기술적 안전 레이어</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">주제 범위 제한</div>
+          <p class="flow-desc">AI 대화가 교육 주제 범위 안에서만 진행되도록 시스템 레벨에서 제한. 부적절한 주제나 대화 방향으로 흐르면 자동으로 리다이렉트.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">실시간 대화 모니터링</div>
+          <p class="flow-desc">대화 내용이 실시간으로 안전 필터를 통과. 이상 감지 시 해당 세션 자동 중단 및 부모 즉시 알림.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">완전 투명 열람</div>
+          <p class="flow-desc">부모가 자녀의 모든 대화를 언제든 열람 가능. 숨겨진 대화 없음. 이 투명성이 안전 브랜드의 핵심.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-connector"><div class="flow-dot"></div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <div class="flow-title">만 14세 미만 개인정보 보호</div>
+          <p class="flow-desc">개인정보보호법에 따라 만 14세 미만 가입 시 부모 동의 필수. 최소한의 개인정보만 수집. 대화 데이터 외부 제공 불가.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>신뢰 브랜딩</h3>
+    <p>안전 설계를 기술 사양이 아니라 <strong>브랜드 약속</strong>으로 포지셔닝한다. "우리 아이의 모든 대화를 부모가 항상 볼 수 있다"는 것이 경쟁사와의 차별점이자 영업 포인트가 된다.</p>
+  </div>
+</section>
+
+<!-- 09 경쟁사 분석 -->
+<section class="section" id="s9">
+  <div class="section-header">
+    <div class="section-num">09</div>
+    <div class="section-title-block">
+      <h2>경쟁사 분석</h2>
+      <p class="section-desc">공백을 확인하고 포지션을 고정한다</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <div class="highlight">
+      <p>"질문 능력"을 핵심 성장 지표로 삼는 플랫폼은 국내외에 없다. 이것은 차별점이다. 단, <strong>이 공백이 수요가 없어서인지, 아직 아무도 시도하지 않은 것인지</strong>를 Phase 1에서 반드시 검증해야 한다.</p>
+    </div>
+
+    <h3>주요 경쟁사 비교</h3>
+
+    <table>
+      <thead><tr><th>플랫폼</th><th>핵심 접근</th><th>학습 목표</th><th>이 플랫폼과의 차이</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>클래스팅 AI</strong><br><span class="tag tag-gray">국내 최강자</span></td>
+          <td>AI 문제 추천, 약점 보완, 학교 랭킹</td>
+          <td>교과 성취도, 시험 점수</td>
+          <td>B2B 중심 — 부모 직접 구독 채널 약함. 경쟁 구조 중심이라 비교 불안 유발.</td>
+        </tr>
+        <tr>
+          <td><strong>Khanmigo</strong><br><span class="tag tag-blue">철학 유사</span></td>
+          <td>소크라테스식 역질문 유도</td>
+          <td>개념 이해, 비판적 사고</td>
+          <td>영어 전용 — 국내 직접 경쟁 없음. 단, "때로 답답하다"는 후기가 동일 리스크를 경고.</td>
+        </tr>
+        <tr>
+          <td><strong>Duolingo</strong><br><span class="tag tag-green">게임화 교과서</span></td>
+          <td>스트릭·리그 기반 게임화</td>
+          <td>언어 습관, 매일 학습</td>
+          <td>게임화로 이탈률 47%→28% 달성. 게임화 최소화 전략을 택한 이 플랫폼은 리텐션 대안을 반드시 설계해야 함.</td>
+        </tr>
+        <tr>
+          <td><strong>레서</strong><br><span class="tag tag-orange">타겟 겹침</span></td>
+          <td>AI 독해 첨삭, 맞춤 커리큘럼</td>
+          <td>독해력, 문해력 점수</td>
+          <td>초등 3~6학년으로 타겟 직접 겹침. "국어 점수 vs 사고력 훈련" 포지션 차이로 공존 가능.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>이 플랫폼만의 고유 포지션 — 공백 지도</h3>
+
+    <div class="two-col">
+      <div class="col-card">
+        <div class="col-label">아무도 하지 않는 것</div>
+        <div class="col-title">독점 가능한 공간</div>
+        <ul>
+          <li>"질문 능력"을 핵심 지표로 측정·시각화</li>
+          <li>질문 수준을 패턴으로 추적하고 성장 순간 포착</li>
+          <li>부모에게 "저녁 대화 스크립트" 자동 제공</li>
+          <li>AI 생성 이미지로 학습 결과를 정원으로 시각화</li>
+          <li>2~3주 전후 질문 비교로 변화를 감각으로 전달</li>
+        </ul>
+      </div>
+      <div class="col-card">
+        <div class="col-label">게임화 없는 리텐션</div>
+        <div class="col-title">해결해야 할 과제</div>
+        <ul>
+          <li>Duolingo의 스트릭을 대체할 리텐션 메커니즘</li>
+          <li>역질문의 답답함을 해소하는 UX (답 + 유도 병행)</li>
+          <li>첫 탐구 완주율을 높이는 온보딩 설계</li>
+          <li>탐구 주제 발견 경험 (빈 화면 문제 해결)</li>
+          <li>"변화가 느껴진다"는 부모 감정을 30일 내 만들기</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 수익 모델 -->
+<section class="section" id="s10">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <div class="section-title-block">
+      <h2>수익 모델</h2>
+      <p class="section-desc">부모 구독 기반</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <p>결제 권한은 부모에게 있다. 부모를 설득하는 것이 핵심이며, 부모가 가치를 느끼는 포인트는 <strong>자녀의 성장이 눈에 보이는 것</strong>과 <strong>안전한 AI 환경</strong> 두 가지다.</p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">무료</div>
+        <div class="pricing-price">0<span>원</span></div>
+        <ul class="pricing-features">
+          <li>월 5회 탐구 세션</li>
+          <li>기본 지식 정원</li>
+          <li>탐구 노트 5개 저장</li>
+          <li>부모 대화 열람</li>
+        </ul>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-tier">탐험가 ★ 추천</div>
+        <div class="pricing-price">9,900<span>원/월</span></div>
+        <ul class="pricing-features">
+          <li>무제한 탐구 세션</li>
+          <li>AI 이미지 생성 정원</li>
+          <li>질문 성장 그래프</li>
+          <li>주간 부모 리포트</li>
+          <li>탐구 노트 무제한 저장</li>
+          <li>PDF 내보내기</li>
+        </ul>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">패밀리</div>
+        <div class="pricing-price">16,900<span>원/월</span></div>
+        <ul class="pricing-features">
+          <li>자녀 3명까지</li>
+          <li>탐험가 기능 전체</li>
+          <li>형제자매 지식 정원 비교</li>
+          <li>가족 탐구 미션 제안</li>
+          <li>부모 코칭 가이드 심화</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <p><strong>연간 구독 할인:</strong> 월 구독 대비 20% 할인. 학기 초(3월, 9월) 프로모션으로 진입 유도.</p>
+    </div>
+
+    <h3>단위 경제학 (AI API 비용 고려)</h3>
+    <table>
+      <thead><tr><th>항목</th><th>추정치</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>탐구 세션당 토큰</td>
+          <td>약 3,000~5,000 토큰</td>
+          <td>스프린트 구조로 압축</td>
+        </tr>
+        <tr>
+          <td>월 평균 탐구 횟수</td>
+          <td>8~12회/아이</td>
+          <td>주 2~3회 가정</td>
+        </tr>
+        <tr>
+          <td>월 AI API 비용</td>
+          <td>약 1,500~3,000원/아이</td>
+          <td>Claude Sonnet 기준</td>
+        </tr>
+        <tr>
+          <td>이미지 생성 비용</td>
+          <td>약 500원/월</td>
+          <td>탐구 5회마다 1회 생성</td>
+        </tr>
+        <tr>
+          <td>월 총 원가</td>
+          <td>약 2,000~3,500원/아이</td>
+          <td>인프라 포함</td>
+        </tr>
+        <tr>
+          <td>9,900원 기준 마진</td>
+          <td>약 60~80%</td>
+          <td>지속 가능한 구조</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 11 기술 스택 -->
+<section class="section" id="s11">
+  <div class="section-header">
+    <div class="section-num">11</div>
+    <div class="section-title-block">
+      <h2>기술 스택</h2>
+      <p class="section-desc">구현 방법</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <table>
+      <thead><tr><th>영역</th><th>기술</th><th>선택 이유</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>프론트엔드</td>
+          <td>Next.js (React)</td>
+          <td>지식 정원 시각화, HTML 노트 SSR 생성에 유리</td>
+        </tr>
+        <tr>
+          <td>백엔드</td>
+          <td>FastAPI (Python)</td>
+          <td>질문 수준 분류, AI API 연동, 텍스트 분석</td>
+        </tr>
+        <tr>
+          <td>데이터베이스</td>
+          <td>Supabase</td>
+          <td>실시간 부모 알림, 대화 로그 저장</td>
+        </tr>
+        <tr>
+          <td>AI 대화 엔진</td>
+          <td>Claude API</td>
+          <td>씨앗 심기 대화, 질문 패턴 분류, 노트 생성. 시스템 프롬프트 엔지니어링이 핵심.</td>
+        </tr>
+        <tr>
+          <td>이미지 생성</td>
+          <td>DALL-E 3 또는 Stable Diffusion</td>
+          <td>지식 정원 배경 이미지 자동 생성</td>
+        </tr>
+        <tr>
+          <td>파일 저장</td>
+          <td>Cloudflare R2</td>
+          <td>탐구 노트 HTML/PDF, 정원 이미지 저장</td>
+        </tr>
+        <tr>
+          <td>인증</td>
+          <td>Supabase Auth</td>
+          <td>부모-자녀 계정 연결, 만 14세 미만 동의 처리</td>
+        </tr>
+        <tr>
+          <td>PDF 생성</td>
+          <td>Puppeteer</td>
+          <td>HTML 노트 → PDF 변환</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>씨앗 심기 + 퀴즈 전체 파이프라인 — 핵심 기술</h3>
+    <p>별도 모델 훈련 없이 <strong>시스템 프롬프트 + 동적 컨텍스트 주입</strong>으로 구현한다.</p>
+
+    <div class="code-block">
+      <div class="code-label">전체 파이프라인</div>
+<span class="accent-line">① 세션 시작 시 컨텍스트 로드 (Supabase):</span>
+<span class="white-line">   question_distribution (최근 20개 질문 유형 분포)</span>
+<span class="white-line">   target_seed_type = 부족한 유형 or 현재 + 1단계</span>
+        ↓
+<span class="accent-line">② 매 턴 — 아이 질문 길이 측정:</span>
+<span class="blue-line">   question_length = len(아이 입력)</span>
+<span class="blue-line">   target_length = short | medium | long</span>
+        ↓
+<span class="accent-line">③ system_prompt 동적 구성 (매 턴):</span>
+<span class="white-line">   [고정]  씨앗 심기 규칙 + Few-shot 예시</span>
+<span class="white-line">   [동적]  target_seed_type + target_length 주입</span>
+        ↓
+<span class="accent-line">④ Claude API 호출 → 답변 생성</span>
+<span class="muted-line">   (길이 맞춤 + 씨앗 포함)</span>
+        ↓
+<span class="accent-line">⑤ 아이 질문 → 패턴 분류 (별도 Claude API 호출):</span>
+<span class="white-line">   {level, type, topic} → Supabase 저장</span>
+<span class="white-line">   question_distribution 실시간 업데이트</span>
+<span class="white-line">   target_seed_type 재계산</span>
+        ↓
+<span class="accent-line">⑥ 탐구 종료 → 노트 자동 생성 (Claude API)</span>
+        ↓
+<span class="accent-line">⑦ 퀴즈 1문제 자동 생성 (Claude API):</span>
+<span class="blue-line">   이번 탐구의 씨앗 내용 기반 단답형 1문제</span>
+<span class="blue-line">   오답 태그 → Supabase 저장 → 다음 추천 가중치 반영</span>
+        ↓
+<span class="accent-line">⑧ 새 질문 유형 첫 등장 여부 체크:</span>
+<span class="muted-line">   첫 등장 → 아이 축하 + 부모 즉시 알림 + 정원 업데이트</span>
+    </div>
+  </div>
+</section>
+
+<!-- 12 로드맵 -->
+<section class="section" id="s12">
+  <div class="section-header">
+    <div class="section-num">12</div>
+    <div class="section-title-block">
+      <h2>로드맵</h2>
+      <p class="section-desc">단계별 출시 전략</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="roadmap">
+      <div class="roadmap-phase">
+        <div class="phase-num">Phase 1 — 3개월</div>
+        <div class="phase-title">핵심 가설 검증</div>
+        <ul>
+          <li>AI 질의응답 탐구 세션 (답 + 유도 병행)</li>
+          <li>질문 패턴 분류 (10개 묶음 기반)</li>
+          <li>첫 탐구 완주율 측정 (온보딩 최적화)</li>
+          <li>기본 탐구 노트 HTML 생성</li>
+          <li>부모 대화 열람 + 주간 리포트</li>
+          <li>소수 베타 가족 (20~30가족)</li>
+          <li>검증 목표: 부모 "변화가 느껴진다" 반응 확인</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-num">Phase 2 — 3개월</div>
+        <div class="phase-title">성장 시각화</div>
+        <ul>
+          <li>지식 정원 시각화 (초등용)</li>
+          <li>질문 성장 그래프</li>
+          <li>주간 부모 리포트</li>
+          <li>AI 이미지 생성 정원 배경</li>
+          <li>유료 구독 론칭</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-num">Phase 3 — 6개월</div>
+        <div class="phase-title">확장</div>
+        <ul>
+          <li>중학생용 지식 우주 UI</li>
+          <li>부족 스킬 자동 감지 훈련</li>
+          <li>패밀리 플랜 출시</li>
+          <li>B2B 연계 검토 (방과후, 학원)</li>
+          <li>탐구 포트폴리오 공유 기능</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>초기 사용자 확보 전략</h3>
+    <div class="highlight">
+      <p>교육 분야에서 가장 강력한 채널은 <strong>부모 커뮤니티</strong>다. 맘카페, 초등 학부모 카카오톡 그룹, 교육 유튜버 협업이 초기 유입의 핵심이다. "우리 아이 질문이 이렇게 바뀌었어요"라는 부모의 실제 후기가 가장 강력한 마케팅이다.</p>
+    </div>
+
+    <table>
+      <thead><tr><th>채널</th><th>전략</th><th>목표</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>맘카페·부모 커뮤니티</td>
+          <td>베타 가족 후기 콘텐츠 배포</td>
+          <td>초기 인지도</td>
+        </tr>
+        <tr>
+          <td>교육 유튜버 협업</td>
+          <td>"아이 질문 성장 실험" 콘텐츠</td>
+          <td>신뢰 구축</td>
+        </tr>
+        <tr>
+          <td>학기 초 프로모션</td>
+          <td>3월·9월 첫 달 무료 체험</td>
+          <td>전환율 극대화</td>
+        </tr>
+        <tr>
+          <td>탐구 노트 바이럴</td>
+          <td>아이가 만든 노트 SNS 공유</td>
+          <td>자연 확산</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="padding:40px 10vw; border-top:2px solid var(--ink); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+  <div style="font-family:'Noto Serif KR',serif; font-weight:700; font-size:16px;">질문하는 아이들</div>
+  <div style="font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.1em;">B2C 기획서 v2 — 초등·중학생 대상 — AI 질문 학습 플랫폼</div>
+</footer>
+
+</body>
+</html>
