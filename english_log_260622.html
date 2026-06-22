@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Speaking Practice & Expression Log</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --success: #16a34a;
+            --success-light: #f0fdf4;
+            --accent: #7c3aed;
+            --accent-light: #f5f3ff;
+            --border: #e2e8f0;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 40px 0 20px 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Strengths Summary Cards */
+        .strengths-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .strength-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .strength-card h3 {
+            font-size: 1.15rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .strength-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Grammar Table */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .strike-text {
+            color: #b91c1c;
+            text-decoration: line-through;
+            font-weight: 500;
+        }
+
+        .correct-text {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* Practice Pairs Hub */
+        .pair-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .pair-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .speech-block {
+            margin-bottom: 14px;
+            padding: 14px 18px;
+            border-radius: 8px;
+        }
+
+        .speech-block.original {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .speech-block.professional {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+        }
+
+        .speech-block.casual {
+            background-color: var(--success-light);
+            border-left: 4px solid var(--success);
+        }
+
+        .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .original .label { color: #b91c1c; }
+        .professional .label { color: var(--primary); }
+        .casual .label { color: var(--success); }
+
+        .speech-text {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .original .speech-text { color: #991b1b; }
+        .professional .speech-text { color: #1e40af; }
+        .casual .speech-text { color: #166534; }
+
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .pair-card { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>English Conversation & Expression Log</h1>
+        <p>A comprehensive language breakdown of your personalized study sessions</p>
+    </header>
+
+    <div class="section-title">Observed Language Strengths</div>
+    <div class="strengths-grid">
+        <div class="strength-card">
+            <h3>Strong Logical Structure</h3>
+            <p>Your sentences follow a clear, analytical path, making your conceptual intent completely seamless and easy to understand.</p>
+        </div>
+        <div class="strength-card">
+            <h3>Rapid Adoption Rate</h3>
+            <p>You instantly integrated newly introduced vocabulary (like "wrapping up" and "catch up on") into subsequent expressions natively.</p>
+        </div>
+        <div class="strength-card">
+            <h3>Authentic Technical Shorthand</h3>
+            <p>You naturally and correctly leverage developer jargon like "Git repo" and "main branch" in exact contextual settings.</p>
+        </div>
+    </div>
+
+    <div class="section-title">Grammar Corrections Matrix</div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30%;">What You Said</th>
+                    <th style="width: 35%;">Recommended Correction</th>
+                    <th style="width: 35%;">Grammar Rule / Explanation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="strike-text">...I've just been in the office.</span></td>
+                    <td><span class="correct-text">...I've just got to / arrived at the office.</span></td>
+                    <td>"Been in" implies you were there and left. To say you recently arrived, use "got to" or "arrived at."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...free of works...</span></td>
+                    <td><span class="correct-text">...free from work / work is a bit slow...</span></td>
+                    <td>"Work" is uncountable here. Use "free from work" or describe the day as "slow."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...the project is almost at the end...</span></td>
+                    <td><span class="correct-text">...the project is wrapping up / nearing completion...</span></td>
+                    <td>More idiomatic and dynamic industry phrasing for finishing projects.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">work will go slowly</span></td>
+                    <td><span class="correct-text">things will be pretty slow today</span></td>
+                    <td>Native speakers describe the day or workflow environment as slow, rather than the work itself.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">Temporaly</span></td>
+                    <td><span class="correct-text">Temporarily</span></td>
+                    <td>Spelling correction (pronounced <i>tem-puh-rer-uh-lee</i>).</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...the other team's project...</span></td>
+                    <td><span class="correct-text">...another team's project...</span></td>
+                    <td>Use "another" when introducing a non-specific team or topic for the first time.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...get back to home team...</span></td>
+                    <td><span class="correct-text">...go back to my home team / core team...</span></td>
+                    <td>Requires a clear possessive pronoun ("my").</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...the another project...</span></td>
+                    <td><span class="correct-text">...another project / a new project...</span></td>
+                    <td>"Another" already means "an other." Never precede it with the article "the."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...catch up all that I missed.</span></td>
+                    <td><span class="correct-text">...catch up on everything I missed.</span></td>
+                    <td>The standard transitive phrasal verb requires a preposition: "catch up on [something]."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...now a days...</span></td>
+                    <td><span class="correct-text">...nowadays...</span></td>
+                    <td>Must always be written together as a single compound word.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...study with AI...</span></td>
+                    <td><span class="correct-text">...use AI to catch up / leverage AI...</span></td>
+                    <td>"Use AI" or "leverage AI" sounds significantly more professional than "studying with" a tool.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">I ask them to AI...</span></td>
+                    <td><span class="correct-text">I ask the AI / I ask AI...</span></td>
+                    <td>Direct object structure: you "ask the AI [a question]" or simply "ask AI."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">...how i getting to know.</span></td>
+                    <td><span class="correct-text">...how I am learning / processing it.</span></td>
+                    <td>Requires a continuous auxiliary verb ("I am") and a natural verb choice for professional context.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">Amount of HTML files</span></td>
+                    <td><span class="correct-text">Number / Volume of HTML files</span></td>
+                    <td>Use "number of" for countable plural items (files). Reserve "amount of" for uncountable abstract elements.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">the sidebar is enough</span></td>
+                    <td><span class="correct-text">a sidebar is enough</span></td>
+                    <td>Use the indefinite article "a" when referring to a general design option or component.</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">This workflow is not an option.</span></td>
+                    <td><span class="correct-text">This workflow is a must-have / mandatory.</span></td>
+                    <td>"Not an option" can accidentally sound like "impossible." To clarify necessity, use "a must-have."</td>
+                </tr>
+                <tr>
+                    <td><span class="strike-text">Synchrozied</span></td>
+                    <td><span class="correct-text">Synchronized</span></td>
+                    <td>Spelling correction (pronounced <i>sin-kruh-naizd</i>).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-title">All Dialogue Expression Pairs</div>
+
+    <!-- Turn 1 -->
+    <div class="pair-card">
+        <div class="pair-header">1. Morning & Office Setup</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Now is early in the morining I've just been in the office. In the morning i'm a little free of works so practicing english speaking."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"It's early in the morning, and I've just arrived at the office. I'm a little free right now, so I'm practicing my English."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"I just got to work, and since mornings are usually a bit slow, I'm taking some time to practice my English."</div>
+        </div>
+    </div>
+
+    <!-- Turn 2 -->
+    <div class="pair-card">
+        <div class="pair-header">2. Project Pace</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Well the project i'm involved in is almost at the end, so today my work will go slowly."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"The project I'm working on is wrapping up, so things will be pretty slow today."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"Since my current project is nearing completion, I can take things a bit easier today."</div>
+        </div>
+    </div>
+
+    <!-- Turn 3 -->
+    <div class="pair-card">
+        <div class="pair-header">3. Team Transition</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Temporaly I'm working on the other team's project and the project is wrapping up. I guess I'll get back to home team next week. I will be assigned the another project there."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"Temporarily, I'm working on another team's project, and it's wrapping up. I guess I'll go back to my home team next week, where I'll be assigned a new project."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"I'm currently on temporary assignment with another team, but that project is winding down. I'll probably head back to my core team next week and start on something new."</div>
+        </div>
+    </div>
+
+    <!-- Turn 4 -->
+    <div class="pair-card">
+        <div class="pair-header">4. Catching Up with AI</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"When I depart from my core team although it's temporary, I'm always worried about not tracking what's going on my core team. I'm a researcher so I have to catch up all that I missed. But! we live in AI era now a days so catching up becomes a little easier. I'm not worried about that anymore."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"Whenever I leave my core team—even temporarily—I always worry about losing track of what's going on. As a researcher, I have to catch up on everything I missed. Fortunately, we live in the AI era nowadays, so catching up has become a lot easier. I'm not really worried about it anymore."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"Leaving my main team temporarily always makes me anxious about being out of the loop. Being a researcher means I have to stay on top of everything. But thanks to AI, keeping up is so much easier now, so I don't sweat it anymore."</div>
+        </div>
+    </div>
+
+    <!-- Turn 5 -->
+    <div class="pair-card">
+        <div class="pair-header">5. Team Synchronization</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"We don't have team level solution for information sync. Once I go back to my original team, I'll figure out what I missed and then I'll study with AI to catch up on them."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"We don't have a team-level solution for syncing information. Once I return to my original team, I'll identify what I missed and use AI to help me get up to speed."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"We don't really have a tool to sync info across the team. When I get back next week, I'll just find out what I missed and leverage AI to catch myself up."</div>
+        </div>
+    </div>
+
+    <!-- Turn 6 -->
+    <div class="pair-card">
+        <div class="pair-header">6. AI Prompting & Study Method</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"First I study by myself and figure out what i don't understand. I ask them to AI and find answers. The conversation with AI contains my study progress and AI exactly knows how I'm digging into and how i getting to know. This is really valuable to me so I have AI summarize all the details in the conversation in html format so that I could look it over next time"</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"First, I study on my own to identify what I don't understand, and then I ask the AI to help me find the answers. Because the AI tracks my progress, it knows exactly how I'm digging into the material and how I'm learning. This is incredibly valuable to me, so I have the AI summarize all the details of our conversation in HTML format so I can review it later."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"I usually start by studying on my own to spot the gaps in my knowledge. Then, I use AI to answer my questions. The AI keeps track of our conversation, so it knows exactly how I'm thinking and processing the information. Since that context is so valuable, I have it wrap everything up in an HTML file so I can easily look it over down the road."</div>
+        </div>
+    </div>
+
+    <!-- Turn 7 -->
+    <div class="pair-card">
+        <div class="pair-header">7. Storing and Building</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Currelntly I keep them in a git repo. I'm planning to make web site so I can easily access and view them."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"Currently, I keep them in a Git repo. I'm planning to build a website so I can easily access and view them."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"Right now, I just host them in a Git repository, but I'm planning to set up a web app down the road to make them easier to browse and read."</div>
+        </div>
+    </div>
+
+    <!-- Turn 8 -->
+    <div class="pair-card">
+        <div class="pair-header">8. Delegating Code to AI</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"The AI will build the website. Actually I can study web programming and build the website on my own. But AI is faster than me. There is no need to do by myself."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"I'll have the AI build the website. Sure, I could study web programming and build it on my own, but AI is so much faster. There's simply no need to do it myself."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"I'm letting AI handle the website build. I'm capable of learning web dev and doing it myself, but AI can knock it out way faster. There's really no point in doing it from scratch."</div>
+        </div>
+    </div>
+
+    <!-- Turn 9 -->
+    <div class="pair-card">
+        <div class="pair-header">9. Interface Elements</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Well it depends on the amount of html files. I have a few files and the sidebar is enough. Someday seraching interface might be required, but at least not now."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"Well, it depends on the volume of HTML files. Since I only have a few right now, a simple sidebar is more than enough. Down the road, a search function might be necessary, but it's definitely not a priority right now."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"It really just depends on how many HTML files I have. Right now, I only have a handful, so a sidebar will do the trick. Eventually, I might need a search interface, but not anytime soon."</div>
+        </div>
+    </div>
+
+    <!-- Turn 10 -->
+    <div class="pair-card">
+        <div class="pair-header">10. Repository Synchronization</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"Of course, the webiste should be synchrozied with the git repo. Whenever the main branch of the repo changes, the website has to change as well. This workflow is not an option."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"Of course, the website needs to be synchronized with the Git repo. Whenever the main branch is updated, the website must reflect those changes automatically. This workflow is a must-have."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"Naturally, the site has to sync with the repo. I want a CI/CD pipeline so that any changes to the main branch automatically trigger a redeployment. Having a manual workflow is a dealbreaker."</div>
+        </div>
+    </div>
+
+    <!-- Turn 11 -->
+    <div class="pair-card">
+        <div class="pair-header">11. Hosting Solution</div>
+        <div class="speech-block original">
+            <span class="label">Your Original Text</span>
+            <div class="speech-text">"I was thinking of firebase and firestore but github pages would be a better option. Thank you, i'll try github pages."</div>
+        </div>
+        <div class="speech-block professional">
+            <span class="label">Option 1: Polished / Professional</span>
+            <div class="speech-text">"I was originally considering Firebase and Firestore, but GitHub Pages sounds like a much better option. Thanks for the tip, I'll give GitHub Pages a try."</div>
+        </div>
+        <div class="speech-block casual">
+            <span class="label">Option 2: Casual / Conversational</span>
+            <div class="speech-text">"I was initially leaning toward a Firebase and Firestore setup, but GitHub Pages is definitely the better fit for a static site. Thank you—I'm going to go with GitHub Pages."</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
