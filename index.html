@@ -845,22 +845,54 @@
             }
 
             .doc-active-title {
-                max-width: 250px;
+                max-width: 200px;
             }
         }
 
-        @media (max-width: 576px) {
+        @media (max-width: 768px) {
             .dashboard-container {
-                padding: 24px;
+                padding: 24px 16px;
                 gap: 24px;
             }
 
             .dashboard-header h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .doc-card {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .topbar-action-btn span {
+                display: none; /* Hide button text to fit small screens */
+            }
+
+            .topbar-action-btn {
+                padding: 8px;
+                width: 36px;
+                height: 36px;
+                justify-content: center;
             }
 
             .doc-active-title {
-                display: none;
+                max-width: 120px;
+                font-size: 0.95rem;
+            }
+
+            .doc-category-tag {
+                display: none; /* Hide category badge to save space */
             }
         }
     </style>
