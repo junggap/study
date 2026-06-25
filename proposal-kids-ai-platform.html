@@ -195,9 +195,35 @@
   @media (max-width: 768px) {
     .section-header { flex-wrap: wrap; }
     .section-desc { margin-left: 0; }
-    .toc { grid-template-columns: 1fr; }
+    .toc-list { grid-template-columns: 1fr; }
     .cover { padding: 60px 6vw; }
     .section { padding: 60px 6vw; }
+    table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .q-row {
+      grid-template-columns: 1fr;
+    }
+    .q-time, .q-level {
+      border-right: none;
+      border-left: none;
+      border-bottom: 1px solid var(--rule);
+      background: rgba(0,0,0,0.01);
+      padding: 10px 16px;
+    }
+    .q-level {
+      justify-content: flex-start;
+      border-bottom: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .garden-stages {
+      grid-template-columns: 1fr;
+    }
   }
 
   /* ============ PRINT STYLES ============ */

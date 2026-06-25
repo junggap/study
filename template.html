@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Template</title>
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS variables for dual themes */
+        :root {
+            --bg-color: #f8fafc;
+            --surface-color: #ffffff;
+            --surface-color-hover: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #e2e8f0;
+            
+            --primary: #2563eb;
+            --primary-soft: #eff6ff;
+            --success: #16a34a;
+            --success-soft: #f0fdf4;
+            --warning: #ca8a04;
+            --warning-soft: #fef9c3;
+            --danger: #dc2626;
+            --danger-soft: #fef2f2;
+            
+            --code-bg: #1e293b;
+            --code-text: #f8fafc;
+            --font-sans: 'Inter', sans-serif;
+            --font-title: 'Outfit', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        /* Dark Theme Variables */
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --surface-color-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            
+            --primary: #3b82f6;
+            --primary-soft: rgba(59, 130, 246, 0.1);
+            --success: #22c55e;
+            --success-soft: rgba(34, 197, 94, 0.1);
+            --warning: #eab308;
+            --warning-soft: rgba(234, 179, 8, 0.1);
+            --danger: #ef4444;
+            --danger-soft: rgba(239, 68, 68, 0.1);
+            
+            --code-bg: #0f172a;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 40px 24px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header Styling */
+        header {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .category-tag {
+            display: inline-block;
+            font-family: var(--font-title);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary);
+            background-color: var(--primary-soft);
+            padding: 4px 12px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        header h1 {
+            font-family: var(--font-title);
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.25;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Navigation Table of Contents */
+        .toc {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-family: var(--font-title);
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+
+        .toc-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            list-style: none;
+        }
+
+        .toc-list a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-list a:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        /* Core Typography */
+        section {
+            margin-bottom: 48px;
+        }
+
+        h2 {
+            font-family: var(--font-title);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-family: var(--font-title);
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin: 28px 0 12px 0;
+            color: var(--text-main);
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        strong {
+            font-weight: 600;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-left: 4px solid var(--primary);
+            background-color: var(--primary-soft);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 24px 0;
+        }
+
+        .callout.success {
+            border-left-color: var(--success);
+            background-color: var(--success-soft);
+        }
+
+        .callout.warning {
+            border-left-color: var(--warning);
+            background-color: var(--warning-soft);
+        }
+
+        .callout.danger {
+            border-left-color: var(--danger);
+            background-color: var(--danger-soft);
+        }
+
+        .callout-title {
+            font-family: var(--font-title);
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        /* Responsive Card Grids */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            background-color: var(--surface-color-hover);
+        }
+
+        .card h4 {
+            font-family: var(--font-title);
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        /* Steps Timeline */
+        .steps {
+            margin: 24px 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .step-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-soft);
+            color: var(--primary);
+            font-family: var(--font-title);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-body {
+            padding-top: 4px;
+        }
+
+        .step-body h4 {
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .code-lang {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        /* Math Formulas */
+        .formula-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            text-align: center;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+        }
+
+        /* Responsive Tables */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--surface-color-hover);
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Mobile Breakpoints */
+        @media (max-width: 768px) {
+            body {
+                padding: 24px 16px;
+            }
+
+            header {
+                margin-bottom: 28px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            .toc-list {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="category-tag">Category</span>
+        <h1>Standard Study Note Title</h1>
+        <p class="subtitle">A clear and descriptive subtitle to summarize the document context</p>
+        <div class="meta-info">
+            <div class="meta-item">
+                <span>📅</span>
+                <span>June 25, 2026</span>
+            </div>
+            <div class="meta-item">
+                <span>👤</span>
+                <span>Author Name</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Table of Contents -->
+    <nav class="toc">
+        <h2>Table of Contents</h2>
+        <ul class="toc-list">
+            <li><a href="#section-1">1. First Section</a></li>
+            <li><a href="#section-2">2. Second Section</a></li>
+            <li><a href="#section-3">3. Interactive Examples</a></li>
+        </ul>
+    </nav>
+
+    <!-- Section 1 -->
+    <section id="section-1">
+        <h2>1. First Section</h2>
+        <p>This is a standard paragraph showing typography spacing. You can use <strong>strong text</strong> or normal text inside sections. Every heading has a bottom border to match the premium portal design.</p>
+        
+        <div class="callout">
+            <div class="callout-title">Info Note</div>
+            <p>Use this general callout to highlight key background concepts or explanations for your study content.</p>
+        </div>
+
+        <h3>1.1 Steps Workflow</h3>
+        <p>For explaining processes, derivations, or sequential events, use the steps structure:</p>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">01</div>
+                <div class="step-body">
+                    <h4>First Phase</h4>
+                    <p>Describe the initial step or setup details of your process.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <div class="step-body">
+                    <h4>Second Phase</h4>
+                    <p>Describe the subsequent execution steps.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section id="section-2">
+        <h2>2. Second Section</h2>
+        <p>Grids and cards are fully responsive and adapt from three columns on desktop to a single column stack on mobile screens.</p>
+        
+        <div class="card-grid">
+            <div class="card">
+                <h4>Component A</h4>
+                <p>Detailed summary of card content, featuring subtle hover shadow lifts.</p>
+            </div>
+            <div class="card">
+                <h4>Component B</h4>
+                <p>Detailed summary of card content, featuring subtle hover shadow lifts.</p>
+            </div>
+        </div>
+
+        <div class="callout success">
+            <div class="callout-title">Key Adoption Tip</div>
+            <p>This is a success callout for highlighting language improvements, study wins, or proven methods.</p>
+        </div>
+
+        <div class="callout warning">
+            <div class="callout-title">Crucial Check</div>
+            <p>Use this yellow accent to list caveats, assumptions, or gotchas in your logic.</p>
+        </div>
+
+        <div class="callout danger">
+            <div class="callout-title">Catastrophic Risk</div>
+            <p>Use this red accent to highlight mathematical bounds, failure conditions, or safety limits.</p>
+        </div>
+    </section>
+
+    <!-- Section 3 -->
+    <section id="section-3">
+        <h2>3. Interactive Examples</h2>
+        <p>Tables and code blocks have built-in responsive wrappers ensuring they scroll horizontally on narrow viewports without breaking the core content layout.</p>
+
+        <h3>3.1 Scrollable Table</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Baseline</th>
+                        <th>Optimized</th>
+                        <th>Improvement Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Throughput</td>
+                        <td>450 req/s</td>
+                        <td>980 req/s</td>
+                        <td>Optimized network connection pool allocations</td>
+                    </tr>
+                    <tr>
+                        <td>Latency (p99)</td>
+                        <td>120ms</td>
+                        <td>18ms</td>
+                        <td>Implemented cache levels on hot database paths</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h3>3.2 Code Block</h3>
+        <div class="code-block">
+            <span class="code-lang">python</span>
+            <pre><code>def run_optimization(epochs=100):
+    # Initialize variables
+    parameters = initialize_weights()
+    for epoch in range(epochs):
+        gradients = compute_gradients(parameters)
+        parameters = update_parameters(parameters, gradients)
+    return parameters</code></pre>
+        </div>
+
+        <h3>3.3 Mathematical Formula</h3>
+        <p>Formulas are also placed in scrollable containers to preserve rendering structure:</p>
+        <div class="formula-wrapper">
+            <!-- If using MathJax, format formulas here -->
+            $$ J(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta}} \left[ \sum_{t=0}^{T} \gamma^t r_t \right] $$
+        </div>
+    </section>
+</div>
+
+<!-- Theme Synchronizer and Helper Script -->
+<script>
+    // Synchronize document theme with the parent page (Study Vault Portal)
+    function syncTheme() {
+        try {
+            if (window.parent && window.parent.document && window.parent.document.body) {
+                const theme = window.parent.document.body.getAttribute('data-theme');
+                if (theme) {
+                    document.documentElement.setAttribute('data-theme', theme);
+                    return;
+                }
+            }
+        } catch (e) {
+            // Fallback for sandboxed context or cross-origin limits
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    // Initial check
+    syncTheme();
+
+    // Listen to storage events (cross-tab sync)
+    window.addEventListener('storage', syncTheme);
+
+    // Periodically poll to capture immediate changes from parent layout
+    setInterval(syncTheme, 500);
+</script>
+</body>
+</html>

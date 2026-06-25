@@ -454,18 +454,37 @@
 
       .timeline > div {
         border-right: none !important;
+        padding: 12px 14px;
       }
 
       .timeline .head {
         display: none;
       }
 
+      .timeline > div:not(.head):nth-child(5n+1)::before { content: "시대: "; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+      .timeline > div:not(.head):nth-child(5n+2)::before { content: "한국사: "; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+      .timeline > div:not(.head):nth-child(5n+3)::before { content: "중국사: "; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+      .timeline > div:not(.head):nth-child(5n+4)::before { content: "일본사: "; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+      .timeline > div:not(.head):nth-child(5n+5)::before { content: "관계사: "; font-weight: 800; color: var(--accent); display: block; margin-bottom: 4px; }
+
+      .timeline > div:not(.head):nth-child(5n+5) {
+        border-bottom: 3px solid var(--line);
+      }
+
       .period {
         font-size: 18px;
+        background: #f0f0f0 !important;
       }
 
       section {
-        padding: 18px;
+        padding: 16px;
+      }
+
+      table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
     }
 
