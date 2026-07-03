@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFP 배터리 완전 정리</title>
+<style>
+  :root {
+    --ink: #1f2421;
+    --sub: #5b645d;
+    --line: #e4e2dc;
+    --fe: #b3592f;
+    --fe-bg: #fdf0e8;
+    --po4: #3f6a7d;
+    --po4-bg: #e9f2f5;
+    --li: #a8862b;
+    --li-bg: #fbf3de;
+    --accent: #2f6d4f;
+    --accent-bg: #eaf3ee;
+    --warn-bg: #fef4e8;
+    --warn-line: #e8c789;
+    --code-bg: #f4f2ed;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", Roboto, sans-serif;
+    line-height: 1.7;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  header.hero {
+    padding: 36px 20px 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+
+  header.hero .eyebrow {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  header.hero h1 {
+    font-size: 26px;
+    line-height: 1.35;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+
+  header.hero p.lead {
+    color: var(--sub);
+    font-size: 15px;
+    margin: 0;
+  }
+
+  nav.toc {
+    background: #fafaf8;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 24px 0 8px;
+  }
+  nav.toc p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sub);
+    letter-spacing: 0.02em;
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 14px;
+  }
+  nav.toc li { margin-bottom: 6px; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--sub); }
+
+  section {
+    padding: 30px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  section:last-of-type { border-bottom: none; }
+
+  section .num {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    padding: 3px 9px;
+    border-radius: 100px;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 20px;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 16px;
+    margin: 22px 0 10px;
+    color: var(--ink);
+  }
+  p { margin: 0 0 14px; font-size: 15.5px; }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; }
+  li { margin-bottom: 6px; font-size: 15.5px; }
+
+  strong { color: var(--ink); font-weight: 700; }
+
+  .callout {
+    background: var(--accent-bg);
+    border-left: 4px solid var(--accent);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14.5px;
+    margin: 14px 0;
+  }
+
+  .fix {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    font-size: 14.5px;
+  }
+  .fix .tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #8a5a12;
+    background: #fbe3b8;
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .chip {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+  .chip.fe { background: var(--fe-bg); color: var(--fe); }
+  .chip.po4 { background: var(--po4-bg); color: var(--po4); }
+  .chip.li { background: var(--li-bg); color: var(--li); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 8px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f7f6f2;
+    font-weight: 700;
+  }
+  .table-scroll {
+    overflow-x: auto;
+    margin: 14px -4px;
+    padding: 0 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-scroll table { min-width: 460px; }
+
+  .formula {
+    background: var(--code-bg);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 16px;
+    font-family: "Cambria Math", Cambria, Georgia, serif;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+
+  .analogy {
+    background: #f6f4ee;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--sub);
+    margin: 14px 0;
+  }
+  .analogy .label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .qa-q {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sub);
+    margin: 0 0 8px;
+    padding-left: 14px;
+    border-left: 3px solid var(--line);
+  }
+
+  .divider-dot {
+    text-align: center;
+    color: var(--line);
+    letter-spacing: 8px;
+    margin: 6px 0 18px;
+  }
+
+  footer {
+    padding: 30px 0 10px;
+    text-align: center;
+    color: var(--sub);
+    font-size: 12.5px;
+  }
+
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+
+  @media (max-width: 380px) {
+    header.hero h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    p, li { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Battery Chemistry Note</div>
+  <h1>LFP 배터리, 원리부터 구조까지</h1>
+  <p class="lead">LiFePO₄의 기본 원리에서 시작해 올리빈 구조, Fe의 역할, 리튬 이동 경로, 전극 구성, 전기화학적 전위까지 — 대화로 파고든 내용을 순서대로 정리했습니다.</p>
+</header>
+
+<div class="wrap">
+
+  <nav class="toc">
+    <p>목차</p>
+    <ol>
+      <li><a href="#s1">LFP 배터리의 기본 원리</a></li>
+      <li><a href="#s2">올리빈 구조란</a></li>
+      <li><a href="#s3">올리빈 구조에서 Fe의 역할</a></li>
+      <li><a href="#s4">전자를 내놓는 건 Li이 아니라 Fe</a></li>
+      <li><a href="#s5">리튬 이온의 이동 방향</a></li>
+      <li><a href="#s6">충전기는 무엇을 하는가</a></li>
+      <li><a href="#s7">전자와 Li⁺는 항상 짝을 이뤄 이동</a></li>
+      <li><a href="#s8">용량을 결정하는 것: Fe인가 Li인가</a></li>
+      <li><a href="#s9">전하 균형 계산 (Li⁺, Fe²⁺, PO₄³⁻)</a></li>
+      <li><a href="#s10">1차원 리튬 통로와 낮은 전도도</a></li>
+      <li><a href="#s11">탄소 코팅의 역할</a></li>
+      <li><a href="#s12">Li⁺도 탄소층을 통과할까</a></li>
+      <li><a href="#s13">입자 표면과 전해질·회로의 연결</a></li>
+      <li><a href="#s14">1차원 통로는 입자 배열이 아니라 결정 내부의 축</a></li>
+      <li><a href="#s15">입자 크기는 무엇이 정하는가</a></li>
+      <li><a href="#s16">LFP 입자란 결국 무엇인가</a></li>
+      <li><a href="#s17">입자들 사이의 연결 구조</a></li>
+      <li><a href="#s18">집전체: 알루미늄과 구리</a></li>
+      <li><a href="#s19">전기화학적 전위의 진짜 의미</a></li>
+      <li><a href="#s20">구리에 리튬이 결합한다는 오해</a></li>
+      <li><a href="#s21">음극의 전위는 무엇이 결정하는가</a></li>
+      <li><a href="#s22">구리 vs 알루미늄, 무엇이 더 좋은가</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 -->
+  <section id="s1">
+    <span class="num">01</span>
+    <h2>LFP 배터리의 기본 원리</h2>
+    <p>LFP(리튬인산철, LiFePO₄) 배터리는 리튬이온이 양극과 음극 사이를 오가며 충방전하는 원리로 작동합니다.</p>
+
+    <h3>기본 구조</h3>
+    <ul>
+      <li><strong>양극(캐소드)</strong>: LiFePO₄ (리튬인산철)</li>
+      <li><strong>음극(애노드)</strong>: 흑연(그래파이트)</li>
+      <li><strong>전해질</strong>: 리튬 이온이 이동하는 매개체</li>
+    </ul>
+
+    <h3>작동 원리</h3>
+    <ul>
+      <li><strong>충전 시</strong>: 리튬이온이 양극(LiFePO₄)에서 빠져나와 전해질을 통과해 음극(흑연)으로 이동하고, 전자는 외부 회로를 통해 이동</li>
+      <li><strong>방전 시</strong>: 반대로 리튬이온이 음극에서 양극으로 돌아오면서 전자가 외부 회로를 흘러 전류를 생성</li>
+    </ul>
+
+    <h3>화학 반응</h3>
+    <div class="formula">LiFePO₄ ⇌ FePO₄ + Li⁺ + e⁻</div>
+    <p>이 과정에서 철(Fe)이 Fe²⁺와 Fe³⁺ 사이를 오가며 산화·환원되면서 전자를 주고받습니다.</p>
+
+    <h3>LFP만의 특징</h3>
+    <ul>
+      <li>인산철(PO₄) 구조가 결정 격자를 안정적으로 잡아줘서, 다른 리튬이온 배터리(NCM 등)보다 열적·화학적으로 훨씬 안정적</li>
+      <li>이 덕분에 열폭주(thermal runaway) 위험이 낮고 수명이 김</li>
+      <li>대신 에너지 밀도는 NCM 계열보다 낮은 편</li>
+    </ul>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <span class="num">02</span>
+    <h2>올리빈 구조란</h2>
+    <p>올리빈(Olivine)은 원래 감람석이라는 광물의 결정 구조 이름인데, LFP의 LiFePO₄가 이 구조를 가지고 있어서 "올리빈계 양극재"라고 부릅니다.</p>
+
+    <h3>구조적 특징</h3>
+    <ul>
+      <li>사방정계(orthorhombic) 결정 구조</li>
+      <li>산소 원자들이 육방밀집(hexagonal close-packed) 형태로 배열되고, 그 틈새 공간에 Li, Fe, P 원자들이 자리잡음</li>
+      <li>PO₄ 사면체가 뼈대를 이루고, 이 견고한 인산염 골격 사이사이에 리튬과 철 이온이 채워진 형태</li>
+    </ul>
+
+    <h3>왜 안정적인가</h3>
+    <ul>
+      <li>인(P)과 산소(O)가 강한 공유결합(P-O)으로 단단하게 연결되어 있어서 구조 전체가 매우 견고함</li>
+      <li>리튬이 빠져나가도(충전 시) FePO₄로 바뀌면서도 골격 자체는 크게 무너지지 않음</li>
+      <li>NCM 같은 층상구조(layered structure)는 리튬이 빠지면 층간 결합이 약해져 산소가 방출되기 쉬운데, 올리빈은 3차원 골격이라 산소가 쉽게 빠져나오지 못함 — 이게 LFP 열 안정성의 핵심 이유</li>
+    </ul>
+
+    <h3>단점</h3>
+    <ul>
+      <li>견고한 구조 때문에 리튬 이온이 이동할 수 있는 통로가 1차원(한 방향)으로 제한됨</li>
+      <li>리튬 확산 속도가 느리고 전기전도도도 낮은 편 → 나노 입자화 + 탄소 코팅으로 보완</li>
+    </ul>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <span class="num">03</span>
+    <h2>올리빈 구조에서 Fe의 역할</h2>
+    <p>Fe는 구조를 지탱하는 역할이 아니라, <strong>전자를 주고받는 산화·환원 중심(redox center)</strong> 역할을 합니다. P-O 골격이 "뼈대"라면, Fe는 "배터리가 실제로 전기를 저장하고 내보내는 핵심 부품"입니다.</p>
+
+    <h3>1. 산화-환원 반응의 주인공</h3>
+    <div class="formula">방전: Fe³⁺ + e⁻ → Fe²⁺<br>충전: Fe²⁺ → Fe³⁺ + e⁻</div>
+    <p>P와 O는 그대로 있고, Fe만 산화수가 바뀌면서 리튬의 출입을 전기화학적으로 가능하게 만듭니다.</p>
+
+    <h3>2. 결정 구조 내 위치</h3>
+    <p>Fe는 산소 8면체(octahedral site) 중심에 위치해 FeO₆ 팔면체를 이루고, 이 팔면체와 PO₄ 사면체가 모서리·꼭짓점을 공유하며 3차원 골격을 형성합니다. 결합의 "강도" 자체는 P-O가 담당하고 Fe-O 결합은 상대적으로 덜 단단합니다.</p>
+
+    <h3>3. 전압을 결정</h3>
+    <p>Fe²⁺/Fe³⁺ 산화·환원 짝의 에너지 준위가 LFP의 작동 전압(약 3.4V)을 결정합니다. 같은 올리빈 구조라도 Fe 대신 Mn을 쓰면(LiMnPO₄) 전압이 더 높아집니다(약 4.1V).</p>
+
+    <h3>4. 전기전도도 문제의 원인</h3>
+    <p>Fe-O 결합이 이온성이 강해서 전자가 Fe에서 Fe로 건너뛰기(전자 호핑) 어렵습니다. 이것이 LFP 전기전도도가 낮은 근본 원인 중 하나입니다.</p>
+
+    <div class="callout">정리: <strong>P-O는 뼈대(안정성 담당)</strong>, <strong>Fe는 배터리 반응의 실제 엔진(전자 저장·방출 담당)</strong></div>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <span class="num">04</span>
+    <h2>전자를 내놓는 건 Li이 아니라 Fe</h2>
+    <p class="qa-q">Q. 충방전 과정에서 전자를 내놓는 것은 Li 아니야?</p>
+    <p>Li은 이미 Li⁺ 상태로 존재하고 있어서, 충방전 중에 전자를 새로 내놓거나 받지 않습니다. 전자를 실제로 주고받는 건 Fe입니다.</p>
+
+    <p>Li은 배터리가 작동하기 전부터 이미 전자 하나를 잃은 이온 상태(Li⁺)로 존재합니다. 충방전 과정에서 Li⁺는 그냥 이온 상태 그대로 결정 구조 밖으로 나갔다가(충전) 다시 들어왔다가(방전) 할 뿐이며, 산화수가 변하지 않고 계속 +1을 유지합니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>입자</th><th>하는 일</th></tr>
+      <tr><td>Li⁺</td><td>전해질을 통해 이온 상태로 이동만 함 (전하 운반체)</td></tr>
+      <tr><td>e⁻</td><td>외부 회로를 통해 이동 (전류를 만드는 실체)</td></tr>
+      <tr><td>Fe</td><td>결정 구조 안에서 산화·환원되며 실제로 전자를 내놓고 받음</td></tr>
+    </table>
+    </div>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      Li 자체는 "택배 상자"처럼 전하를 옮기는 역할이고, Fe가 실제 "발전기" 역할을 합니다.
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <span class="num">05</span>
+    <h2>리튬 이온의 이동 방향</h2>
+    <p class="qa-q">Q. 이온화된 리튬 이온은 양극재에서 음극재로 이동하는 거야?</p>
+    <p>방향은 충전이냐 방전이냐에 따라 달라집니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>과정</th><th>Li⁺ 이동 방향</th><th>Fe 산화상태 변화</th></tr>
+      <tr><td>충전</td><td>양극 → 음극</td><td>Fe²⁺ → Fe³⁺ (산화)</td></tr>
+      <tr><td>방전</td><td>음극 → 양극</td><td>Fe³⁺ → Fe²⁺ (환원)</td></tr>
+    </table>
+    </div>
+
+    <p><strong>방전 시</strong>: 음극(흑연)의 Li⁺가 전해질을 통해 양극(LiFePO₄)으로 이동하고, 동시에 음극의 전자가 외부 회로를 거쳐 양극으로 이동합니다. 양극에서는 이 전자를 받아 Fe³⁺ → Fe²⁺로 환원되며 Li⁺를 받아들입니다.</p>
+    <p><strong>충전 시</strong>: 외부 전원이 이 과정을 강제로 거꾸로 돌립니다. 양극(LiFePO₄)에서 Li⁺가 빠져나와 음극(흑연)으로 이동하고, 양극의 Fe²⁺는 전자를 내놓으며 Fe³⁺로 산화됩니다.</p>
+
+    <div class="callout">"양극"과 "음극"이라는 명칭은 방전 기준(배터리를 쓸 때)으로 정해진 것입니다 — 방전 시 전류가 나오는 쪽이 양극(+), 들어가는 쪽이 음극(−)입니다.</div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <span class="num">06</span>
+    <h2>충전기는 무엇을 하는가</h2>
+    <p class="qa-q">Q. 충전기는 단순히 Li⁺를 음극으로 보내기 위해 전압만 걸어주는 역할인가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      전압은 Fe의 "양"이 아니라 Fe²⁺/Fe³⁺ 산화환원 짝의 <strong>에너지 준위(화학적 성질)</strong>가 결정합니다. Fe가 많고 적음은 용량(capacity)을 결정합니다.
+      <ul style="margin-top:8px;">
+        <li>전압 → Fe 산화환원 짝의 에너지 준위</li>
+        <li>용량(mAh) → 전체 Fe(활물질) 양</li>
+      </ul>
+    </div>
+
+    <p>충전기는 "전압만 걸어주는" 게 아니라, 실제로 <strong>전자(전하)를 직접 밀어 넣고 빼내는</strong> 역할을 합니다.</p>
+    <ol>
+      <li>배터리 자체의 평형 전압보다 더 높은 전압을 외부에서 강제로 걸어줌</li>
+      <li>이 전압 차이 때문에 전자가 (자연스러운 방향과 반대로) 강제로 흐름</li>
+      <li>충전기 (−) 단자에서 나온 전자가 음극(흑연)으로 밀려 들어감</li>
+      <li>동시에 양극(LiFePO₄)에서 전자가 빠져나와 충전기 (+) 단자로 흘러감</li>
+    </ol>
+
+    <p><strong>전압은 "방향과 힘"을 정하고, 실제로 이동하는 건 진짜 전자(전하량)</strong>입니다. 전압만 걸고 전하가 안 움직이면 아무 반응도 일어나지 않습니다.</p>
+    <p>Li⁺의 이동은 전자 이동과 짝을 이뤄서 자동으로 따라옵니다. 양극에서 전자가 빠져나가면 Fe²⁺→Fe³⁺ 산화가 일어나며 전하 균형이 깨지고, 이를 맞추려 Li⁺가 자동으로 결정 밖으로 빠져나옵니다. 음극에서는 반대로 전자가 들어오며 흑연 층 사이에 Li⁺가 삽입(intercalation)됩니다.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <span class="num">07</span>
+    <h2>전자와 Li⁺는 항상 짝을 이뤄 이동</h2>
+    <p class="qa-q">Q. 전자가 음극재에 많이 모이면 Li⁺가 음극으로 오는 것인가?</p>
+    <p>정확히는 "동시에 일어나는 것"이지 "전자가 먼저 모이고 그 다음 Li⁺가 끌려오는" 게 아닙니다. 전자만 계속 쌓이면 흑연이 순식간에 (−) 전하로 대전되어 전기적으로 불안정한 상태가 되므로, 전자와 Li⁺는 거의 동시에 짝을 이루어 이동해야 합니다.</p>
+
+    <div class="formula">C₆ + Li⁺ + e⁻ → LiC₆</div>
+    <p>전자와 Li⁺가 같은 자리에서 만나 결합하면서 흑연 층 사이에 리튬이 끼워 들어가는(삽입) 반응이 한 번에 일어납니다.</p>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      전자와 Li⁺는 신랑신부가 각자 다른 문으로 입장하지만 정확히 같은 타이밍에 제단 앞에서 만나는 것과 비슷합니다. 회로(전자 통로)와 전해질(이온 통로)이라는 다른 길로 오지만, 반응이 성립하려면 같은 시점·같은 자리에서 만나야 합니다.
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <span class="num">08</span>
+    <h2>용량을 결정하는 것: Fe인가 Li인가</h2>
+    <p class="qa-q">Q. 용량은 결국 Li⁺의 양이 결정하는 것 아닌가? 왜 Fe의 양이 용량을 결정한다고 하는가?</p>
+    <p>둘 다 맞는 말입니다. 핵심은 LiFePO₄의 화학양론(1:1 비율)입니다. Fe가 100개 있으면 Li도 정확히 100개 들어 있고, Fe 1개가 전자 1개를 내놓을 수 있는 만큼만 Li⁺ 1개가 빠져나갈 수 있습니다.</p>
+
+    <p>다만 병목(bottleneck)은 Fe(redox site)입니다. 전해질에는 Li⁺가 원래 풍부하지만, 양극 결정 구조 안에서 빠져나올 수 있는 Li⁺의 최대량은 전하 균형을 맞춰줄 Fe의 개수로 제한됩니다. Fe가 다 산화되고 나면 전해질에 Li⁺가 아무리 남아있어도 더는 저장할 수 없습니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>구성요소</th><th>역할</th></tr>
+      <tr><td>Li⁺</td><td>전하를 실어 나르는 운반체 (전해질에 원래 풍부)</td></tr>
+      <tr><td>Fe</td><td>전자를 내주는 "자리" — 이 개수가 반응의 한계를 정함</td></tr>
+    </table>
+    </div>
+
+    <p>용량 = 실제로 이동 가능한 전자의 총량 = Fe 원자 개수(활물질 양). Li과 Fe 둘 다 같은 숫자를 가리키지만, "누가 전자를 내주냐"를 기준으로 보면 Fe가 본질적 원인입니다.</p>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <span class="num">09</span>
+    <h2>전하 균형 계산 (Li⁺, Fe²⁺, PO₄³⁻)</h2>
+    <p class="qa-q">Q. Li는 1+, Fe는 2+이면 PO₄는 3−인가?</p>
+
+    <div class="chip-row">
+      <span class="chip li">Li⁺ = +1</span>
+      <span class="chip fe">Fe²⁺ = +2</span>
+      <span class="chip po4">PO₄³⁻ = −3</span>
+    </div>
+
+    <div class="formula">Li⁺ + Fe²⁺ + PO₄³⁻ = +1 + 2 − 3 = 0</div>
+    <p>전체 화합물은 전기적으로 중성이어야 하므로 정확히 맞아떨어집니다.</p>
+
+    <h3>PO₄³⁻ 자체를 뜯어보면</h3>
+    <p>인산이온(PO₄³⁻)은 중심에 인(P)이 있고 그 주위를 산소(O) 4개가 둘러싼 사면체 구조의 다원자 이온입니다. P는 원래 +5 산화수, O는 각각 −2씩 4개(합 −8)이므로 +5−8 = −3이 됩니다.</p>
+
+    <h3>충전 시 어떻게 되는가</h3>
+    <div class="formula">Fe²⁺ → Fe³⁺ + e⁻</div>
+    <p>충전되어 FePO₄가 되면:</p>
+    <div class="formula">Fe³⁺ + PO₄³⁻ = +3 − 3 = 0</div>
+    <p>Li⁺가 없어도 Fe³⁺와 PO₄³⁻만으로 전체 전하가 중성이 됩니다. Li의 유무에 따라 Fe의 산화수만 바뀌며(2+ ↔ 3+) 전체 전하 중성을 유지하는 것이 이 물질이 충방전 가능한 이유입니다.</p>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <span class="num">10</span>
+    <h2>1차원 리튬 통로와 낮은 전도도</h2>
+
+    <h3>3차원 골격이 만들어지는 방식</h3>
+    <ul>
+      <li>FeO₆ 팔면체들이 모서리를 공유하며 사슬(chain) 형태로 이어짐</li>
+      <li>이 Fe 사슬들 사이를 PO₄ 사면체가 꼭짓점으로 연결하며 가로 방향으로 골격을 단단히 묶음</li>
+      <li>Fe-O와 P-O가 3차원 그물처럼 얽혀 매우 견고한 뼈대를 형성</li>
+    </ul>
+
+    <h3>왜 Li 통로가 1차원인가</h3>
+    <p>Li⁺는 이 촘촘한 Fe/P 골격 사이의 빈 공간(채널)에 들어가 있는데, 이 빈 공간이 결정학적으로 한 방향(b축)으로만 뚫려 있습니다. 가로 방향(a축, c축)으로는 Fe와 P가 만든 벽이 막고 있어 Li⁺가 옆으로 새지 못합니다.</p>
+
+    <h3>전기전도도가 낮은 이유 두 가지</h3>
+    <p><strong>1) 이온전도도가 낮은 이유(Li⁺ 이동)</strong>: 1차원 통로이기 때문에 중간에 결함(defect)이나 불순물이 하나만 있어도 뒤에 있는 Li⁺들이 전부 막혀버립니다. 2·3차원 구조(우회 가능)에 비해 훨씬 취약합니다.</p>
+    <p><strong>2) 전자전도도가 낮은 이유(전자 이동)</strong>: Fe-O 결합이 이온성이 강해서 전자가 이웃 Fe로 건너뛰려면(전자 호핑, small polaron hopping) 상당한 에너지 장벽을 넘어야 합니다. 층상구조인 NCM과 달리 전자가 평면을 따라 자유롭게 이동할 통로가 부족합니다.</p>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      1차원 통로는 "일방통행 도로에 사고 하나 나면 전체가 마비"되는 것과 같습니다.
+    </div>
+
+    <div class="callout">그래서 실제 제품에서는 입자를 나노미터 크기로 작게 만들어 Li⁺ 이동 거리를 줄이고, 표면에 탄소를 코팅해 전자가 이동할 별도의 고속도로를 만들어 보완합니다.</div>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <span class="num">11</span>
+    <h2>탄소 코팅의 역할</h2>
+    <p>탄소 코팅은 한마디로 <strong>"전자가 다니는 우회 고속도로"</strong>입니다. Li⁺가 다니는 이온 통로(1차원)는 그대로 두고, 전자가 이동할 별도의 길을 표면에 깔아주는 방식입니다.</p>
+
+    <h3>1. 전자전도도 보완 (핵심 역할)</h3>
+    <p>입자 표면을 얇은 전도성 탄소로 감싸면, 전자가 입자 내부를 억지로 통과하지 않고 표면의 탄소층을 따라 빠르게 이동할 수 있습니다. Li⁺는 입자 안쪽 1차원 통로로, 전자는 표면 탄소층으로 — 서로 다른 길로 이동해 반응 지점(입자 표면 근처)에서 만납니다.</p>
+
+    <h3>2. 입자 간 전기적 연결 형성</h3>
+    <p>탄소가 입자들을 얇게 감싸고 서로 이어주면서 전극 전체에 전자가 흐를 수 있는 네트워크(도전 경로)를 형성합니다.</p>
+
+    <h3>3. 입자 크기 유지 및 응집 방지</h3>
+    <p>나노 입자는 제조 과정에서 서로 뭉치기 쉬운데, 탄소 코팅이 표면을 감싸면서 입자끼리 들러붙는 걸 막고 나노 크기를 유지하도록 돕습니다.</p>
+
+    <h3>4. 부가적 효과</h3>
+    <p>탄소층이 입자 표면을 전해질과 직접 접촉하지 않게 막아 부반응이나 Fe 용출 같은 열화를 줄이는 데도 도움이 됩니다.</p>
+
+    <div class="fix">
+      <span class="tag">주의</span>
+      탄소 코팅은 어디까지나 전자 이동을 돕는 것이지, Li⁺의 1차원 통로 문제 자체를 해결하지는 못합니다. 그래서 <strong>탄소 코팅 + 나노 입자화</strong>를 함께 적용해야 LFP의 성능 한계를 극복할 수 있습니다.
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <span class="num">12</span>
+    <h2>Li⁺도 탄소층을 통과할까</h2>
+    <p class="qa-q">Q. LFP 입자를 탄소층이 감싸고 있으면 Li⁺도 탄소층을 통해 전해질로 이동하는가?</p>
+    <p>맞습니다. 탄소 코팅은 완전히 막힌 벽이 아니라 나노미터 수준(보통 1~10nm)의 다공성(porous) 얇은 막입니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>입자</th><th>이동 경로</th><th>방식</th></tr>
+      <tr><td>Li⁺</td><td>탄소층의 미세 기공을 통과</td><td>확산(diffusion)</td></tr>
+      <tr><td>e⁻</td><td>탄소 격자 자체를 타고 이동</td><td>전도(conduction)</td></tr>
+    </table>
+    </div>
+
+    <p>탄소는 비정질(amorphous) 탄소나 그래핀 유사 구조로, 나노 스케일의 결함과 틈이 많습니다. 전자는 탄소의 sp² 결합 네트워크를 통해 자유롭게 이동하고, Li⁺는 이 네트워크 사이 빈틈이나 얇은 두께 자체를 뚫고 확산합니다.</p>
+
+    <h3>실제 설계에서의 균형점</h3>
+    <ul>
+      <li>탄소층이 너무 두꺼우면: 전자전도도는 좋아지지만 Li⁺ 통과 거리가 늘어나 이온 이동이 느려짐</li>
+      <li>탄소층이 너무 얇으면: Li⁺ 통과는 쉽지만 전자 네트워크가 끊어져 전도성 향상 효과가 줄어듦</li>
+      <li>실제 상용 LFP는 이 트레이드오프를 고려해 최적 두께(보통 몇 nm 수준)로 코팅</li>
+    </ul>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <span class="num">13</span>
+    <h2>입자 표면과 전해질·회로의 연결</h2>
+    <p class="qa-q">Q. 양극재의 한쪽은 전해질과, 다른 한쪽은 외부 회로와 연결되어 있을 텐데, 탄소층은 양쪽에 다 코팅되는가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      탄소 코팅은 입자 표면 전체를 골고루 감싸고 있습니다. "이쪽은 전해질용, 저쪽은 회로용"으로 방향이 나뉘어 있는 게 아닙니다.
+    </div>
+
+    <p>실제 양극은 평면 구조가 아니라, 수십~수백 나노미터 크기의 작은 LFP 입자 수억 개가 뭉쳐진 입체 구조입니다. 입자 하나하나가 탄소로 표면 전체(360도)가 코팅되어 있고, 이 입자들 사이 빈 공간에 전해질이 스며들어 있습니다. 입자들은 서로 맞닿거나 도전재로 연결되어 집전체까지 이어집니다.</p>
+
+    <p>즉 <strong>입자 하나의 표면 전체가 동시에 전해질과도 접촉하고, 동시에 이웃 입자/도전재를 통해 회로와도 연결</strong>되어 있습니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>입자 표면에서 나온 뒤</th><th>어디로 가는가</th></tr>
+      <tr><td>Li⁺</td><td>탄소층 통과 → 입자 사이 전해질로 확산 → 분리막 건너 반대 전극으로</td></tr>
+      <tr><td>e⁻</td><td>탄소층 → 옆 입자/도전재 → 집전체 → 외부 회로</td></tr>
+    </table>
+    </div>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      탄소 코팅된 입자는 사방이 열린 "우체국 창구"와 같습니다. 창구를 나온 다음 물건(Li⁺)은 도로(전해질)로, 편지(전자)는 전선망(도전재 네트워크)을 타고 갑니다.
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section id="s14">
+    <span class="num">14</span>
+    <h2>1차원 통로는 입자 배열이 아니라 결정 내부의 축</h2>
+    <p class="qa-q">Q. 1차원 축이 결정되려면 입자들이 서로 정렬돼야 하지 않는가? 탄소 코팅되어 있는데 어떻게 특정 방향으로 정렬될 수 있는가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      1차원 통로는 여러 입자가 정렬돼서 만들어지는 축이 아니라, <strong>입자 하나(단결정) 안에서 원자 배열 자체가 만드는 고정된 방향</strong>입니다.
+    </div>
+
+    <p>LFP 입자 하나는 그 자체가 이미 원자들이 규칙적으로 배열된 단결정(single crystal)입니다. 이 결정 안에는 원래부터 a축, b축, c축이 정해져 있고, Li⁺ 통로는 그 결정 내부의 b축 방향으로 뚫려 있습니다.</p>
+
+    <p>전극 안의 수많은 LFP 입자들은 각자 제각각 무작위 방향으로 놓여 있어도 전혀 문제 없습니다. 입자 A의 b축이 위를 향하든, 입자 B의 b축이 옆으로 눕든 각 입자는 독립적으로 자기 안에서 자기의 b축 방향대로 Li⁺를 내보내고 받아들이기 때문입니다.</p>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      주사위 여러 개를 바닥에 아무렇게나 던져놓아도, 주사위 하나하나는 이미 "위-아래-옆" 방향이 정해진 정육면체입니다. 주사위들끼리 같은 방향으로 정렬될 필요 없이, 각자 자기 자신의 축 방향대로 움직이면 됩니다.
+    </div>
+
+    <p>탄소 코팅은 입자 <strong>표면</strong>을 감싸는 것이고, 1차원 Li⁺ 통로는 입자 <strong>내부</strong> 결정 구조의 이야기이므로 서로 다른 층위의 개념입니다. 탄소 코팅은 결정 방향에 영향을 주지 않고, 이미 정해진 방향과 무관하게 표면 전체를 균일하게 감쌉니다.</p>
+  </section>
+
+  <!-- 15 -->
+  <section id="s15">
+    <span class="num">15</span>
+    <h2>입자 크기는 무엇이 정하는가</h2>
+    <p class="qa-q">Q. 원자의 크기가 정해져 있으니 입자 하나의 크기도 정해져 있는 것 아닌가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      원자/이온의 크기와 입자의 크기는 완전히 다른 레벨의 개념입니다.
+    </div>
+
+    <p>원자나 이온의 크기는 물리적으로 고정되어 있습니다. 이것이 모여 만드는 최소 반복 단위를 단위세포(unit cell)라 하며, 이것도 크기가 고정되어 있습니다(LFP는 대략 a=6Å, b=10Å, c=4.7Å 정도). 반면 LFP "입자"는 이 단위세포가 수백만~수억 개 반복되어 쌓인 덩어리입니다.</p>
+
+    <div class="formula">입자 크기 = 단위세포 크기 × 반복 횟수</div>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      레고 블록 하나(단위세포)의 크기는 고정되어 있지만, 몇 개를 이어 붙이느냐에 따라 완성된 구조물(입자)의 전체 크기는 얼마든지 달라질 수 있습니다.
+    </div>
+
+    <h3>입자 크기를 결정하는 것: 합성 조건</h3>
+    <ul>
+      <li>고온에서 원료(리튬염, 철염, 인산염)를 반응(소성)시킬 때, 온도·시간·전구체 농도로 결정 크기 제어</li>
+      <li>온도 낮게, 시간 짧게 → 결정이 조금만 자람 → 나노 입자(수십~수백 nm)</li>
+      <li>온도 높게, 시간 길게 → 결정이 계속 자람 → 마이크론 크기의 큰 입자</li>
+    </ul>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>구분</th><th>크기</th><th>무엇이 결정하나</th></tr>
+      <tr><td>원자/이온</td><td>고정 (예: Li⁺ ≈ 0.076nm)</td><td>물리 법칙 (전자껍질 구조)</td></tr>
+      <tr><td>단위세포</td><td>고정 (예: b축 ≈ 1nm)</td><td>원자들의 배열 방식</td></tr>
+      <tr><td>입자(결정)</td><td>가변 (수십 nm ~ 수 μm)</td><td>합성 조건 (온도, 시간 등)</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <!-- 16 -->
+  <section id="s16">
+    <span class="num">16</span>
+    <h2>LFP 입자란 결국 무엇인가</h2>
+    <p class="qa-q">Q. LFP 입자라는 것은 LiFePO₄가 여러 개 있는 것을 얘기하는가?</p>
+    <p>맞습니다. LFP 입자 하나는 LiFePO₄라는 화학식 단위(formula unit)가 3차원으로 수없이 반복되어 쌓인 결정 덩어리입니다.</p>
+
+    <ol>
+      <li><strong>화학식 단위</strong>: Li 1개, Fe 1개, P 1개, O 4개로 이루어진 최소 조성 단위</li>
+      <li><strong>단위세포(unit cell)</strong>: 화학식 단위들이 올리빈 구조로 모여 만드는 최소 반복 패턴 (단위세포 하나에 보통 LiFePO₄ 4개)</li>
+      <li><strong>입자(결정)</strong>: 이 단위세포가 세 방향으로 수백만~수억 번 반복되어 쌓인 것</li>
+    </ol>
+
+    <div class="formula">LFP 입자 1개 = 단위세포 × (매우 큰 숫자)³</div>
+
+    <p>이 반복 배열이 규칙적이기 때문에 b축 방향 Li⁺ 통로도 입자 전체에 걸쳐 끊김없이 이어진 하나의 긴 터널이 됩니다. 입자가 클수록 Li⁺가 통과해야 할 터널 길이도 길어지고, 중간에 결함 하나만 있어도 그 뒤로는 다 막혀버립니다.</p>
+  </section>
+
+  <!-- 17 -->
+  <section id="s17">
+    <span class="num">17</span>
+    <h2>입자들 사이의 연결 구조</h2>
+    <p>LFP 입자들은 크게 3가지 요소로 서로 연결됩니다: 도전재, 바인더, 집전체.</p>
+
+    <h3>1. 도전재(Conductive Additive) — 전자가 다니는 다리</h3>
+    <p>카본블랙 같은 미세 탄소 입자들이 LFP 입자들 사이를 메우며 전기적으로 이어줍니다. 표면 탄소층 + 카본블랙이 서로 맞닿으며 전극 전체에 전자가 흐를 수 있는 도전 네트워크를 형성합니다.</p>
+
+    <h3>2. 바인더(Binder) — 물리적 접착제</h3>
+    <p>PVDF 같은 고분자가 LFP 입자, 도전재, 집전체를 물리적으로 접착시켜 전극 형태를 유지합니다. 절연체이므로 적당량만 사용합니다.</p>
+
+    <h3>3. 집전체(Current Collector) — 외부 회로와의 연결점</h3>
+    <p>알루미늄 박막(양극용)에 활물질 혼합물을 얇게 코팅해서 만듭니다. 모든 입자에서 나온 전자는 도전재 네트워크를 타고 결국 이 금속판까지 도달해야 외부 회로로 나갈 수 있습니다.</p>
+
+    <h3>4. 입자 사이 빈 공간 — 이온 통로</h3>
+    <p>입자들을 압연해도 완전히 밀착되지 않고 미세한 기공이 남으며, 이 틈새로 전해질이 스며들어 Li⁺ 이동 통로가 됩니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>요소</th><th>역할</th><th>이동하는 것</th></tr>
+      <tr><td>도전재 + 표면 탄소코팅</td><td>입자 간 전기적 연결</td><td>전자(e⁻)</td></tr>
+      <tr><td>바인더(PVDF)</td><td>물리적 접착, 구조 유지</td><td>없음 (절연)</td></tr>
+      <tr><td>집전체</td><td>외부 회로와 연결</td><td>전자(e⁻)</td></tr>
+      <tr><td>전해질(기공)</td><td>이온 이동 매개체</td><td>Li⁺</td></tr>
+    </table>
+    </div>
+
+    <div class="analogy">
+      <span class="label">비유</span>
+      전극을 도시라고 하면, LFP 입자 = 발전소, 카본블랙+탄소코팅 = 전선망, 집전체 = 변전소, 전해질이 스민 빈틈 = 물류 트럭(Li⁺)이 다니는 도로망입니다.
+    </div>
+  </section>
+
+  <!-- 18 -->
+  <section id="s18">
+    <span class="num">18</span>
+    <h2>집전체: 알루미늄과 구리</h2>
+    <p class="qa-q">Q. 알루미늄이 양극에서 외부 회로와 연결되어 있고, 음극은 흑연만 있는가?</p>
+
+    <p>양극은 맞지만, 음극도 흑연만 있는 게 아니라 양극과 동일한 구성 방식을 따릅니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>구성 요소</th><th>음극에서의 역할</th></tr>
+      <tr><td>흑연 (활물질)</td><td>Li⁺를 저장하는 본체</td></tr>
+      <tr><td>도전재 (카본블랙 등)</td><td>흑연 입자들 사이 전기적 연결</td></tr>
+      <tr><td>바인더 (PVDF, SBR 등)</td><td>물리적 접착, 구조 유지</td></tr>
+      <tr><td>구리(Cu) 집전체</td><td>외부 회로와의 연결점</td></tr>
+    </table>
+    </div>
+
+    <h3>왜 음극은 구리, 양극은 알루미늄인가</h3>
+    <ul>
+      <li>알루미늄은 낮은 전압에서 리튬과 반응해 합금을 만들어버려 음극에는 사용 불가</li>
+      <li>구리는 저전압에서 안정적이지만, 고전압 환경(양극)에서는 산화(부식)되기 쉬워 사용 불가</li>
+      <li>두 금속은 서로 자리를 바꿔 쓸 수 없고 역할이 고정됨</li>
+    </ul>
+
+    <div class="formula">양극: 알루미늄 집전체 ← LFP + 카본블랙 + 바인더<br>음극: 구리 집전체 ← 흑연 + 카본블랙 + 바인더</div>
+  </section>
+
+  <!-- 19 -->
+  <section id="s19">
+    <span class="num">19</span>
+    <h2>전기화학적 전위의 진짜 의미</h2>
+    <p class="qa-q">Q. 음극은 저전압, 양극은 고전압이라니 이해가 안 된다. 양극과 음극이 함께 전압을 만드는 것 아닌가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      배터리 "전체 전압"과 각 전극의 "개별 전위"는 다른 개념입니다. 전체 전압은 양극과 음극이 함께 만드는 게 맞지만, "저전압/고전압"은 각 전극이 독자적으로 가지는 전기화학적 전위(electrode potential)를 말합니다.
+    </div>
+
+    <p>전기화학에서는 Li/Li⁺ 기준 전극을 0V로 놓고 비교합니다.</p>
+    <ul>
+      <li>LFP(양극): Li/Li⁺ 대비 약 +3.4V</li>
+      <li>흑연(음극): Li/Li⁺ 대비 약 +0.1V</li>
+    </ul>
+
+    <div class="formula">셀 전압 = 양극 전위 − 음극 전위 = 3.4V − 0.1V = 3.3V</div>
+
+    <p>이것이 두 전극이 함께 만드는 결과값, 즉 전체 배터리 전압입니다.</p>
+
+    <h3>집전체 선택은 각 전극이 놓인 "위치(전위)"의 문제</h3>
+    <ul>
+      <li>음극은 0V 근처의 낮은 전위 환경 — 이 환경에서 알루미늄은 리튬과 반응해 합금(LiAl)을 만들어버려 사용 불가 → 구리 사용</li>
+      <li>양극은 3~4V의 높은 전위 환경 — 이 환경에서 구리는 산화되어 부식됨 → 알루미늄 사용</li>
+    </ul>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>개념</th><th>의미</th></tr>
+      <tr><td>셀 전압 (3.2~3.3V)</td><td>양극 전위 − 음극 전위 (두 전극이 함께 만듦)</td></tr>
+      <tr><td>양극/음극의 개별 전위</td><td>각 전극이 Li/Li⁺ 기준으로 가지는 고유한 값</td></tr>
+      <tr><td>집전체 금속 선택</td><td>각 전극이 놓인 전위 환경에서의 안정성으로 결정</td></tr>
+    </table>
+    </div>
+
+    <h3>전위는 "농도 차이"가 아니라 "에너지 준위 차이"</h3>
+    <p class="qa-q">Q. 전기화학적 전위가 전해질의 Li⁺와 전극의 Li 사이 전위차를 의미하는가?</p>
+    <p>아니요. 전극 전위는 전해질 속 Li⁺ 농도와 전극 속 Li 농도의 단순한 "농도 차이"가 아니라, <strong>Li이 각 물질 속에 들어가 있을 때 얼마나 에너지적으로 안정한가(화학퍼텐셜)의 차이</strong>를 의미합니다.</p>
+
+    <div class="formula">Li⁺(전해질) + e⁻(전극) ⇌ Li(전극 결정 속에 삽입됨)</div>
+    <p>이 반응이 얼마나 자발적인지를 나타내는 값이 전극 전위이며, 기준은 순수 리튬 금속(Li metal) 속 Li의 에너지를 0V로 잡은 것입니다.</p>
+
+    <ul>
+      <li>흑연 속 Li(LiC₆) → 순수 리튬 금속과 에너지가 거의 비슷 → 전위 0V에 가까움</li>
+      <li>LFP 속 Li → 순수 리튬 금속보다 훨씬 안정한 상태 → 안정화 정도가 클수록 전위 높음(3.4V)</li>
+    </ul>
+
+    <p>전위가 높다는 것은 LFP 결정 구조 속에서 Li이 Fe³⁺/Fe²⁺와 함께 있을 때 에너지적으로 매우 안정한 자리를 차지한다는 뜻입니다. "안정하다"는 건 그 자리를 떠나기 싫어한다(=많은 에너지를 방출하며 자발적으로 들어가려 한다)는 의미이고, 이것이 높은 전압으로 나타납니다.</p>
+
+    <div class="callout">같은 올리빈 구조라도 Fe 대신 Mn을 쓰면 전압이 달라지는 이유는, Fe²⁺/Fe³⁺ 짝과 Mn²⁺/Mn³⁺ 짝의 에너지 준위가 다르기 때문입니다 — 농도 문제가 아니라 순전히 금속-리튬 조합의 화학적 안정성 차이입니다.</div>
+  </section>
+
+  <!-- 20 -->
+  <section id="s20">
+    <span class="num">20</span>
+    <h2>구리에 리튬이 결합한다는 오해</h2>
+    <p class="qa-q">Q. LFP 입자들을 구리에 도핑하는 순간 구리와 리튬이 서로 결합하는 것인가?</p>
+
+    <div class="fix">
+      <span class="tag">정정 1</span>
+      LFP는 구리가 아니라 <strong>알루미늄</strong> 집전체 위에 코팅됩니다. 구리는 흑연(음극재)이 붙는 쪽입니다.
+    </div>
+    <div class="fix">
+      <span class="tag">정정 2</span>
+      "도핑(doping)"이 아니라 "코팅/도포"입니다. 도핑은 결정 구조 안에 다른 원소를 소량 치환해 넣는 화학 용어이고, 지금 얘기하는 것은 알루미늄 박막 표면에 LFP 슬러리를 얇게 바르는 물리적 공정입니다. 화학적 결합이 아니라 그냥 얹혀있는 것입니다.
+    </div>
+
+    <p>LFP를 알루미늄에 발라도 리튬-알루미늄 반응은 일어나지 않습니다. 리튬이 알루미늄과 합금(LiAl)을 만드는 반응은 매우 낮은 전위(0V 근처)에서만 자발적으로 일어나는데, 양극은 높은 전위(3.4V) 환경이라 이 반응이 열역학적으로 일어나지 않습니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>위치</th><th>집전체</th><th>활물질</th><th>전위 환경</th><th>집전체-Li 반응 여부</th></tr>
+      <tr><td>양극</td><td>알루미늄</td><td>LFP</td><td>높음(~3.4V)</td><td>반응 안 함 (안정)</td></tr>
+      <tr><td>음극</td><td>구리</td><td>흑연</td><td>낮음(~0.1V)</td><td>반응 안 함 (안정) — 알루미늄이었다면 반응했을 것</td></tr>
+    </table>
+    </div>
+
+    <div class="callout">집전체 금속과 Li이 결합하느냐 마느냐는 "어떤 금속이냐"와 "어떤 전위 환경에 있느냐"가 함께 결정합니다.</div>
+  </section>
+
+  <!-- 21 -->
+  <section id="s21">
+    <span class="num">21</span>
+    <h2>음극의 전위는 무엇이 결정하는가</h2>
+    <p class="qa-q">Q. 양극은 LFP 속 Li로 전위를 계산할 수 있을 것 같은데, 음극은 흑연과 구리밖에 없는데 어떻게 전위를 결정하는가?</p>
+
+    <div class="fix">
+      <span class="tag">정정</span>
+      구리는 이 계산에 전혀 참여하지 않습니다. 전위를 결정하는 건 순전히 <strong>흑연 속에 Li이 들어갔을 때의 에너지 상태</strong>이며, 구리는 그냥 전자를 회로로 실어 나르는 전선 역할입니다.
+    </div>
+
+    <div class="formula">C₆ + Li⁺ + e⁻ ⇌ LiC₆</div>
+    <p>여기서도 기준은 동일합니다: 순수 리튬 금속 속 Li의 에너지를 0V로 놓고, 흑연 속에 삽입된 Li(LiC₆)의 에너지가 이것과 얼마나 다른지를 비교합니다.</p>
+
+    <p>흑연은 탄소 원자들이 층(layer) 구조로 쌓여있고, 층과 층 사이 빈 공간에 Li⁺가 전자와 함께 삽입됩니다. 이때 탄소는 Fe처럼 강하게 산화·환원되는 게 아니라, Li이 내놓은 전자를 탄소의 π전자 시스템이 약하게만 받아들입니다. 그래서 흑연 속 Li의 에너지 상태가 순수 리튬 금속과 거의 비슷해 전위도 0V에 가까운 작은 값(~0.1~0.2V)이 됩니다.</p>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>구분</th><th>무엇이 Li을 받아들이나</th><th>안정화 정도</th><th>전위</th></tr>
+      <tr><td>양극(LFP)</td><td>Fe²⁺/Fe³⁺가 강하게 산화환원되며 Li을 붙잡음</td><td>매우 안정</td><td>높음 (3.4V)</td></tr>
+      <tr><td>음극(흑연)</td><td>탄소층이 약하게 Li을 붙잡음</td><td>순수 리튬과 비슷</td><td>낮음 (0.1V)</td></tr>
+    </table>
+    </div>
+
+    <p>"얼마나 강하게 Li을 붙잡아두는가"가 전위를 결정하는 공통 원리입니다.</p>
+  </section>
+
+  <!-- 22 -->
+  <section id="s22">
+    <span class="num">22</span>
+    <h2>구리 vs 알루미늄, 무엇이 더 좋은가</h2>
+    <p>단순 "우열"보다는 "적합성"의 문제입니다.</p>
+
+    <h3>전기전도도만 보면 구리가 더 좋음</h3>
+    <ul>
+      <li>구리: 약 5.96×10⁷ S/m</li>
+      <li>알루미늄: 약 3.5×10⁷ S/m</li>
+      <li>구리가 알루미늄보다 약 1.6배 더 잘 통함</li>
+    </ul>
+
+    <div class="table-scroll">
+    <table>
+      <tr><th>항목</th><th>구리</th><th>알루미늄</th></tr>
+      <tr><td>전기전도도</td><td>더 좋음</td><td>상대적으로 낮음</td></tr>
+      <tr><td>무게(밀도)</td><td>무거움 (8.96 g/cm³)</td><td>가벼움 (2.70 g/cm³)</td></tr>
+      <tr><td>가격</td><td>비쌈</td><td>저렴함</td></tr>
+      <tr><td>고전위 안정성</td><td>산화·부식됨 (양극 불가)</td><td>안정적</td></tr>
+      <tr><td>저전위 안정성</td><td>안정적</td><td>Li과 합금화 (음극 불가)</td></tr>
+    </table>
+    </div>
+
+    <h3>왜 "무조건 좋은 금속"이 없는가</h3>
+    <ol>
+      <li><strong>전위 안정성이 절대적 제약</strong>: 구리는 고전위(양극)에서 산화되고, 알루미늄은 저전위(음극)에서 리튬과 반응해버려 서로 자리를 바꿀 수 없음</li>
+      <li><strong>무게·비용은 알루미늄이 유리</strong>: 알루미늄이 구리보다 3배 이상 가볍고 저렴해 에너지 밀도 확보에 도움</li>
+      <li><strong>실제 선택 기준은 "성능"이 아니라 "그 위치에서 버틸 수 있는가"</strong></li>
+    </ol>
+
+    <div class="callout">전위 안정성이라는 절대적 제약 조건 때문에 "어느 게 더 좋은가"가 아니라 "어느 위치에 어느 금속을 써야 하는가"의 문제가 됩니다. 배터리 업계에서는 우열보다 <strong>적재적소(right material, right place)</strong>의 원칙으로 접근합니다.</div>
+  </section>
+
+</div>
+
+<footer>
+  LFP 배터리 원리 정리 · 대화 기반 학습 노트
+</footer>
+
+</body>
+</html>
